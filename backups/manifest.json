@@ -1,0 +1,48 @@
+{
+  "tag": "v13-reader-test",
+  "title": "Reader Test v13",
+  "source_prefix": "openlib-reader-test",
+  "artifacts": [
+    {
+      "name": "Openlib-Reader-Test-v13.apk",
+      "sha256": "afb5f065566f8388ce3a139acd43c9c7777e58a46bed53640d117b2b2ddc9d38",
+      "bytes": 44446175,
+      "parts": [
+        "backups/parts/Openlib-Reader-Test-v13.apk.part000",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part001",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part002",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part003",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part004",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part005",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part006",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part007",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part008",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part009",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part010",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part011",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part012",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part013",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part014",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part015",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part016",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part017",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part018",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part019",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part020",
+        "backups/parts/Openlib-Reader-Test-v13.apk.part021"
+      ]
+    },
+    {
+      "name": "Openlib-Reader-Source-v13.zip",
+      "sha256": "1e3445160b1ff927a3bf8f75d4a10d64139ed6d544f58e1ec36d748e83c6e75e",
+      "bytes": 9248446,
+      "parts": [
+        "backups/parts/Openlib-Reader-Source-v13.zip.part000",
+        "backups/parts/Openlib-Reader-Source-v13.zip.part001",
+        "backups/parts/Openlib-Reader-Source-v13.zip.part002",
+        "backups/parts/Openlib-Reader-Source-v13.zip.part003",
+        "backups/parts/Openlib-Reader-Source-v13.zip.part004"
+      ]
+    }
+  ]
+}

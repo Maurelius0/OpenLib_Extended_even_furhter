@@ -1,0 +1,22 @@
+name: Publish verified project backup
+on:
+  push:
+    branches: [main]
+    paths: [backups/manifest.json]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: publish-project-backup
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify archives, import source, and publish test release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/import_and_release.py

@@ -1,0 +1,6 @@
+.release-staging/
+*.keystore
+*.jks
+.env
+.env.*
+android/key.properties
