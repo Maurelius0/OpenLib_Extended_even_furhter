@@ -1,0 +1,17 @@
+{
+  "tag": "v13-reader-test",
+  "source_commit": "935f6223e7ccca09049675e09aeadfc0e4f321f3",
+  "release_url": "https://github.com/Maurelius0/OpenLib_Extended_even_furhter/releases/tag/v13-reader-test",
+  "assets": [
+    {
+      "name": "Openlib-Reader-Source-v13.zip",
+      "bytes": 9248446,
+      "download_url": "https://github.com/Maurelius0/OpenLib_Extended_even_furhter/releases/download/v13-reader-test/Openlib-Reader-Source-v13.zip"
+    },
+    {
+      "name": "Openlib-Reader-Test-v13.apk",
+      "bytes": 44446175,
+      "download_url": "https://github.com/Maurelius0/OpenLib_Extended_even_furhter/releases/download/v13-reader-test/Openlib-Reader-Test-v13.apk"
+    }
+  ]
+}
