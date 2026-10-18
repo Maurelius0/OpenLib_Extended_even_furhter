@@ -1,0 +1,260 @@
+{
+  "repositories": {
+    "google/fonts": "1d0e46c7933245c8180fe83e47917961c913bbdb",
+    "antijingoist/opendyslexic": "1824da5c0e41dc3e13ffc7f3a636dcaf695d61b7"
+  },
+  "fonts": [
+    {
+      "id": "literata",
+      "label": "Literata",
+      "category": "Serif",
+      "faces": [
+        {
+          "asset": "assets/reader_fonts/literata-normal-200-900.woff2",
+          "style": "normal",
+          "weight": "200 900",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/literata/Literata[opsz,wght].ttf",
+          "source_sha256": "b41138c9373112f32abb589cc22e8674b06ed4048b0c513be922bdd26f274440"
+        },
+        {
+          "asset": "assets/reader_fonts/literata-italic-200-900.woff2",
+          "style": "italic",
+          "weight": "200 900",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/literata/Literata-Italic[opsz,wght].ttf",
+          "source_sha256": "d483dfaeba9cbf4ce71d32a52ee65df82f7e35b15fff8d1011cdb242d1fcd465"
+        }
+      ]
+    },
+    {
+      "id": "lora",
+      "label": "Lora",
+      "category": "Serif",
+      "faces": [
+        {
+          "asset": "assets/reader_fonts/lora-normal-400-700.woff2",
+          "style": "normal",
+          "weight": "400 700",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/lora/Lora[wght].ttf",
+          "source_sha256": "822a6621ccbe8d97d20ac88c1c41f5615c9c2c202eaa75f272cd452aac6475a7"
+        },
+        {
+          "asset": "assets/reader_fonts/lora-italic-400-700.woff2",
+          "style": "italic",
+          "weight": "400 700",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/lora/Lora-Italic[wght].ttf",
+          "source_sha256": "22d8d8854b53807aa664ca34f2031a9ed57a1d0dea296b8b96cdd3aad937a2b3"
+        }
+      ]
+    },
+    {
+      "id": "librebaskerville",
+      "label": "Libre Baskerville",
+      "category": "Serif",
+      "faces": [
+        {
+          "asset": "assets/reader_fonts/librebaskerville-normal-400-700.woff2",
+          "style": "normal",
+          "weight": "400 700",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/librebaskerville/LibreBaskerville[wght].ttf",
+          "source_sha256": "05a95421961341c5b2556285e8415df9db27dab4f4abe22b446b3c6a8b916c5d"
+        },
+        {
+          "asset": "assets/reader_fonts/librebaskerville-italic-400-700.woff2",
+          "style": "italic",
+          "weight": "400 700",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/librebaskerville/LibreBaskerville-Italic[wght].ttf",
+          "source_sha256": "223959683dc73ec4437bd61fabaa4b3f22209e22855ffd3aee36ba61a5116e97"
+        }
+      ]
+    },
+    {
+      "id": "sourceserif4",
+      "label": "Source Serif 4",
+      "category": "Serif",
+      "faces": [
+        {
+          "asset": "assets/reader_fonts/sourceserif4-normal-200-900.woff2",
+          "style": "normal",
+          "weight": "200 900",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/sourceserif4/SourceSerif4[opsz,wght].ttf",
+          "source_sha256": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b"
+        },
+        {
+          "asset": "assets/reader_fonts/sourceserif4-italic-200-900.woff2",
+          "style": "italic",
+          "weight": "200 900",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/sourceserif4/SourceSerif4-Italic[opsz,wght].ttf",
+          "source_sha256": "15fbc7e4679489a501998c3669272637a6646388ef7e4bd77eebb5bf967a1f42"
+        }
+      ]
+    },
+    {
+      "id": "ebgaramond",
+      "label": "EB Garamond",
+      "category": "Serif",
+      "faces": [
+        {
+          "asset": "assets/reader_fonts/ebgaramond-normal-400-800.woff2",
+          "style": "normal",
+          "weight": "400 800",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/ebgaramond/EBGaramond[wght].ttf",
+          "source_sha256": "ef9512f92f6d579e5dc75af59a5a4b1b8b47d2eda89e00b954d44520e5369027"
+        },
+        {
+          "asset": "assets/reader_fonts/ebgaramond-italic-400-800.woff2",
+          "style": "italic",
+          "weight": "400 800",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/ebgaramond/EBGaramond-Italic[wght].ttf",
+          "source_sha256": "bba2c4499c93c9612b90b9825d32b07da52fce2fe57562a1eb6b833553f93c4e"
+        }
+      ]
+    },
+    {
+      "id": "notoserif",
+      "label": "Noto Serif",
+      "category": "Serif",
+      "faces": [
+        {
+          "asset": "assets/reader_fonts/notoserif-normal-100-900.woff2",
+          "style": "normal",
+          "weight": "100 900",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/notoserif/NotoSerif[wdth,wght].ttf",
+          "source_sha256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713"
+        },
+        {
+          "asset": "assets/reader_fonts/notoserif-italic-100-900.woff2",
+          "style": "italic",
+          "weight": "100 900",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/notoserif/NotoSerif-Italic[wdth,wght].ttf",
+          "source_sha256": "e87acbc6c0efd0d9a20d6a8cbbda2b266c14be3a3a6f5af8ec9d7b2460570ad1"
+        }
+      ]
+    },
+    {
+      "id": "sourcesans3",
+      "label": "Source Sans 3",
+      "category": "Sans serif",
+      "faces": [
+        {
+          "asset": "assets/reader_fonts/sourcesans3-normal-200-900.woff2",
+          "style": "normal",
+          "weight": "200 900",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/sourcesans3/SourceSans3[wght].ttf",
+          "source_sha256": "042fe2cc0b933e328410d7acbd0aa6a1873dca5aef81875f4bc214b08825c7b9"
+        },
+        {
+          "asset": "assets/reader_fonts/sourcesans3-italic-200-900.woff2",
+          "style": "italic",
+          "weight": "200 900",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/sourcesans3/SourceSans3-Italic[wght].ttf",
+          "source_sha256": "39e3ab05ccd7cb94907c31005bb5bec1d5432f0b096a2b782976e217a540eb6c"
+        }
+      ]
+    },
+    {
+      "id": "nunito",
+      "label": "Nunito",
+      "category": "Rounded sans serif",
+      "faces": [
+        {
+          "asset": "assets/reader_fonts/nunito-normal-200-1000.woff2",
+          "style": "normal",
+          "weight": "200 1000",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/nunito/Nunito[wght].ttf",
+          "source_sha256": "bb55a5ca5c2042335b3991af27c4d0705d0ef41cac6164ac737fd8f2a1e85207"
+        },
+        {
+          "asset": "assets/reader_fonts/nunito-italic-200-1000.woff2",
+          "style": "italic",
+          "weight": "200 1000",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/nunito/Nunito-Italic[wght].ttf",
+          "source_sha256": "b520cc871868b0acfca1beda875df7f4a44ebce914f8a89f83977fc9c09529c8"
+        }
+      ]
+    },
+    {
+      "id": "atkinsonhyperlegible",
+      "label": "Atkinson Hyperlegible",
+      "category": "Sans serif",
+      "faces": [
+        {
+          "asset": "assets/reader_fonts/atkinsonhyperlegible-normal-400.woff2",
+          "style": "normal",
+          "weight": "400",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/atkinsonhyperlegible/AtkinsonHyperlegible-Regular.ttf",
+          "source_sha256": "7fb917c89019896d0b52ee84b7cbb3304c18cb90b19a62f5e32712bd23e97669"
+        },
+        {
+          "asset": "assets/reader_fonts/atkinsonhyperlegible-italic-400.woff2",
+          "style": "italic",
+          "weight": "400",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/atkinsonhyperlegible/AtkinsonHyperlegible-Italic.ttf",
+          "source_sha256": "021beda4d3c6edfc78872e436d74009f9a1bcb294331908fe5747c61d3dcc514"
+        },
+        {
+          "asset": "assets/reader_fonts/atkinsonhyperlegible-normal-700.woff2",
+          "style": "normal",
+          "weight": "700",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/atkinsonhyperlegible/AtkinsonHyperlegible-Bold.ttf",
+          "source_sha256": "5a3b0c8cc8ca545155150b4512a1fa248298df121c50d6557e651e61fbdab92f"
+        },
+        {
+          "asset": "assets/reader_fonts/atkinsonhyperlegible-italic-700.woff2",
+          "style": "italic",
+          "weight": "700",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/atkinsonhyperlegible/AtkinsonHyperlegible-BoldItalic.ttf",
+          "source_sha256": "7a46f1b0ef2f64b61065c1a6b5a11fcb9b019b44062d88ba121a083cc39e86bf"
+        }
+      ]
+    },
+    {
+      "id": "lexend",
+      "label": "Lexend",
+      "category": "Sans serif",
+      "faces": [
+        {
+          "asset": "assets/reader_fonts/lexend-normal-100-900.woff2",
+          "style": "normal",
+          "weight": "100 900",
+          "source": "https://raw.githubusercontent.com/google/fonts/1d0e46c7933245c8180fe83e47917961c913bbdb/ofl/lexend/Lexend[wght].ttf",
+          "source_sha256": "3add53e641fbc81da64da4bb254285e2831b52b029527bc0714e2b9610832ee6"
+        }
+      ]
+    },
+    {
+      "id": "opendyslexic",
+      "label": "OpenDyslexic",
+      "category": "Dyslexia-oriented",
+      "faces": [
+        {
+          "asset": "assets/reader_fonts/opendyslexic-normal-400.woff2",
+          "style": "normal",
+          "weight": "400",
+          "source": "https://raw.githubusercontent.com/antijingoist/opendyslexic/1824da5c0e41dc3e13ffc7f3a636dcaf695d61b7/compiled/OpenDyslexic-Regular.otf",
+          "source_sha256": "32f5840fb2bf844bdabafe372591ddfb9286e98117f5b21950aaf54ea856919a"
+        },
+        {
+          "asset": "assets/reader_fonts/opendyslexic-normal-800.woff2",
+          "style": "normal",
+          "weight": "800",
+          "source": "https://raw.githubusercontent.com/antijingoist/opendyslexic/1824da5c0e41dc3e13ffc7f3a636dcaf695d61b7/compiled/OpenDyslexic-Bold.otf",
+          "source_sha256": "5d690ea4c87ccb0d5d5d81487826a395e9b20a6c1d606f1f262c060d2bef4f03"
+        },
+        {
+          "asset": "assets/reader_fonts/opendyslexic-italic-400.woff2",
+          "style": "italic",
+          "weight": "400",
+          "source": "https://raw.githubusercontent.com/antijingoist/opendyslexic/1824da5c0e41dc3e13ffc7f3a636dcaf695d61b7/compiled/OpenDyslexic-Italic.otf",
+          "source_sha256": "dfa0185bb0d47cb76cb5d082531822d0dca03152f5b6ec6c9f6e3f8d00b71782"
+        },
+        {
+          "asset": "assets/reader_fonts/opendyslexic-italic-800.woff2",
+          "style": "italic",
+          "weight": "800",
+          "source": "https://raw.githubusercontent.com/antijingoist/opendyslexic/1824da5c0e41dc3e13ffc7f3a636dcaf695d61b7/compiled/OpenDyslexic-BoldItalic.otf",
+          "source_sha256": "95894a308f534d152ce96fb764caddded0d56a82d67d4686eb1fb900368228ee"
+        }
+      ]
+    }
+  ]
+}
