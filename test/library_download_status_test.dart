@@ -64,11 +64,10 @@ void main() {
       });
       await container.read(libraryBooksProvider.future);
       expect((await container.read(myLibraryProvider.future)).length, 3);
-      container.read(libraryStatusFilterProvider.notifier).state =
-          ReadingStatus.unread;
+      expect(container.read(libraryStatusFilterProvider), isNull);
       List<String> visible() =>
           container.read(organizedLibraryProvider).map((b) => b.id).toList();
-      expect(visible(), ['unread']);
+      expect(visible(), ['finished', 'reading', 'unread']);
       container.read(libraryStatusFilterProvider.notifier).state =
           ReadingStatus.inProgress;
       expect(visible(), ['reading']);
@@ -108,9 +107,8 @@ void main() {
       await completed.timeout(const Duration(seconds: 15));
       await refreshed.future.timeout(const Duration(seconds: 5));
       expect(visible(), ['reading']);
-      container.read(libraryStatusFilterProvider.notifier).state =
-          ReadingStatus.unread;
-      expect(visible(), unorderedEquals(['unread', id]));
+      container.read(libraryStatusFilterProvider.notifier).state = null;
+      expect(visible(), [id, 'finished', 'reading', 'unread']);
       container.read(libraryStatusFilterProvider.notifier).state =
           ReadingStatus.completed;
       expect(visible(), ['finished']);

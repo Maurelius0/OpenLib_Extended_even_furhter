@@ -11,7 +11,7 @@ A personal Android reader project based on [warreth/OpenlibExtended](https://git
 - Reader startup-background improvements.
 - v14 EPUB link fixes and single-tap image opening.
 - v15 double-tap image zoom.
-- Consistent Unread / In Progress / Completed categories, including after downloads.
+- Library (all books) / In Progress / Completed categories, including after downloads.
 
 The previously published APK remains v13; these newer source changes require a new build.
 See [library category fix and verification](docs/LIBRARY_CATEGORIES.md).

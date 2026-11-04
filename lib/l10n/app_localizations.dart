@@ -258,6 +258,12 @@ abstract class AppLocalizations {
   /// **'Enable'**
   String get enable;
 
+  /// Library category showing all downloaded books
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get statusLibrary;
+
   /// Reading status filter chip
   ///
   /// In en, this message translates to:

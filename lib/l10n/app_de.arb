@@ -26,6 +26,7 @@
   "notificationsExplanation": "OpenlibExtended benötigt die Berechtigung für Benachrichtigungen, um den Download-Fortschritt im Hintergrund anzuzeigen. So behalten Sie Ihre Buch-Downloads auch im minimierten Zustand im Blick.",
   "maybeLater": "Vielleicht später",
   "enable": "Aktivieren",
+  "statusLibrary": "Bibliothek",
   "statusUnread": "Ungelesen",
   "statusInProgress": "In Bearbeitung",
   "statusCompleted": "Fertig",

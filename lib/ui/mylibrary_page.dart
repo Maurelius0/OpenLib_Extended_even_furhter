@@ -212,7 +212,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     final allTags =
         ref.watch(libraryTagsProvider).valueOrNull ?? const <String>{};
 
-    Widget statusChip(String label, ReadingStatus value) {
+    Widget statusChip(String label, ReadingStatus? value) {
       final selected = statusFilter == value;
       return Padding(
         padding: const EdgeInsets.only(right: 6),
@@ -233,7 +233,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          statusChip(l10n.statusUnread, ReadingStatus.unread),
+          statusChip(l10n.statusLibrary, null),
           statusChip(l10n.statusInProgress, ReadingStatus.inProgress),
           statusChip(l10n.statusCompleted, ReadingStatus.completed),
           for (final tag in allTags)

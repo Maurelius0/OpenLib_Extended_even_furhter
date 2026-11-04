@@ -43,11 +43,11 @@ void main() {
               locale: const Locale('en'),
               home: const Scaffold(body: MyLibraryPage()))));
       await tester.pumpAndSettle();
-      expect(container.read(libraryStatusFilterProvider), ReadingStatus.unread);
+      expect(container.read(libraryStatusFilterProvider), isNull);
       expect(container.read(organizedLibraryProvider).map((b) => b.id),
-          books.where((b) => b.status == ReadingStatus.unread).map((b) => b.id));
+          books.map((b) => b.id));
       for (final entry in {
-        'Unread': ReadingStatus.unread,
+        'Library': null,
         'In Progress': ReadingStatus.inProgress,
         'Completed': ReadingStatus.completed,
       }.entries) {
@@ -58,19 +58,19 @@ void main() {
         await tester.pumpAndSettle();
         expect(container.read(libraryStatusFilterProvider), entry.value);
         expect(container.read(organizedLibraryProvider).map((b) => b.book.id),
-            books.where((b) => b.status == entry.value).map((b) => b.book.id));
-        if (count > 0 && !books.any((b) => b.status == entry.value)) {
+            books.where((b) => entry.value == null || b.status == entry.value).map((b) => b.book.id));
+        if (count > 0 && !books.any((b) => entry.value == null || b.status == entry.value)) {
           expect(
               find.text('No books match the current filters'), findsOneWidget);
         }
-        for (final label in ['Unread', 'In Progress', 'Completed']) {
+        for (final label in ['Library', 'In Progress', 'Completed']) {
           expect(find.widgetWithText(FilterChip, label), findsOneWidget);
         }
         await tester.tap(chip);
         await tester.pumpAndSettle();
         expect(container.read(libraryStatusFilterProvider), entry.value);
         expect(container.read(organizedLibraryProvider).map((b) => b.id),
-            books.where((b) => b.status == entry.value).map((b) => b.id));
+            books.where((b) => entry.value == null || b.status == entry.value).map((b) => b.id));
       }
     });
   }

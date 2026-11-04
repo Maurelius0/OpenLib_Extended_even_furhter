@@ -109,6 +109,10 @@
   "@enable": {
     "description": "Confirm button granting a permission"
   },
+  "statusLibrary": "Library",
+  "@statusLibrary": {
+    "description": "Library category showing all downloaded books"
+  },
   "statusUnread": "Unread",
   "@statusUnread": {
     "description": "Reading status filter chip"

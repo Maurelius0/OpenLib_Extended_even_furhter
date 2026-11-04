@@ -91,6 +91,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get enable => 'Activer';
 
   @override
+  String get statusLibrary => 'Bibliothèque';
+
+  @override
   String get statusUnread => 'Non lu';
 
   @override

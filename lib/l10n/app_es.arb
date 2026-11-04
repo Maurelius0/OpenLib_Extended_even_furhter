@@ -26,6 +26,7 @@
   "notificationsExplanation": "OpenlibExtended necesita el permiso de notificaciones para mostrar el progreso de las descargas en segundo plano. Así puedes seguir tus descargas de libros aunque la aplicación esté minimizada.",
   "maybeLater": "Quizás más tarde",
   "enable": "Activar",
+  "statusLibrary": "Biblioteca",
   "statusUnread": "Sin leer",
   "statusInProgress": "En progreso",
   "statusCompleted": "Completado",

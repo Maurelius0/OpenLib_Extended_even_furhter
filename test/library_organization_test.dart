@@ -305,7 +305,7 @@ void main() {
       container.read(librarySortModeProvider.notifier).state =
           LibrarySortMode.titleAsc;
       final organized = container.read(organizedLibraryProvider);
-      expect(organized.map((b) => b.title), ['Ay Second']);
+      expect(organized.map((b) => b.title), ['Ay Second', 'Zed First']);
 
       container.read(libraryStatusFilterProvider.notifier).state =
           ReadingStatus.inProgress;

@@ -91,6 +91,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get enable => 'Activar';
 
   @override
+  String get statusLibrary => 'Biblioteca';
+
+  @override
   String get statusUnread => 'Sin leer';
 
   @override

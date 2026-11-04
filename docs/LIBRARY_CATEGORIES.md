@@ -15,8 +15,12 @@ for imports and restores did not propagate to it.
 
 ## Fix
 
-- Start with Unread selected.
-- Keep one reading category selected; tapping the current category is idempotent.
+- Start with Library selected, showing every downloaded book regardless of status.
+- Keep one category selected; tapping the current category is idempotent.
+- Library replaces the former Unread chip. In Progress and Completed retain their
+  status filters. Internal unread metadata is preserved.
+- Default to newest added first, with the existing saved sort order, search and
+  tag filters applying across categories.
 - Notify the main library only after a downloaded book is saved successfully.
 - Derive the categorized book list from the main library provider, so downloads,
   imports and restores use the same source.
@@ -30,16 +34,19 @@ introduced. The controls retain their existing layout and styling.
 
 ## Verification
 
-The new regression checks were run against the previous source: all three
+Before the later Library-category adjustment, regression checks were run against
+the original source: all three
 startup/category tests failed because the initial category was null, and the
 local-download test timed out waiting for the cached book list to refresh.
-Restoring the fix makes all 24 library tests pass.
+Restoring that fix made all 24 library tests pass. After the approved Library
+adjustment, all 24 updated library checks and seven localization checks pass.
 
 The download regression uses the real DownloadManager, a local HTTP server and
 SQLite. It starts with unread, in-progress and completed books, downloads a
 checksum-valid file while In Progress is selected, waits for automatic refresh,
-and verifies the new book appears under Unread alongside the existing unread
-book. The existing in-progress and completed books retain their categories.
+and verifies Library shows the new book first, followed by the existing finished,
+in-progress and unread books. The existing in-progress and completed books
+retain their categories.
 It also verifies the main library cache updates from three to four books.
 
 Additional download-manager, image-viewer, EPUB-resource and reader-shell checks

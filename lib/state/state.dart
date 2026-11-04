@@ -534,9 +534,9 @@ final librarySortModeProvider =
 /// Active tag filters; empty set means no tag filter.
 final libraryTagFilterProvider = StateProvider<Set<String>>((ref) => {});
 
-/// One category is always selected, including on first opening the library.
+/// Null selects Library (all books); the other categories filter by status.
 final libraryStatusFilterProvider =
-    StateProvider<ReadingStatus>((ref) => ReadingStatus.unread);
+    StateProvider<ReadingStatus?>((ref) => null);
 
 /// Free-text filter over library metadata (title, author, publisher,
 /// info line). Empty string means no filter.
