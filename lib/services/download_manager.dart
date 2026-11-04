@@ -145,6 +145,12 @@ class DownloadManager {
   final StreamController<Map<String, DownloadTask>> _downloadsController =
       StreamController<Map<String, DownloadTask>>.broadcast();
 
+  final StreamController<void> _libraryChangesController =
+      StreamController<void>.broadcast();
+
+  /// Emitted only after a downloaded book has been saved successfully.
+  Stream<void> get libraryChanges => _libraryChangesController.stream;
+
   // Constants for download completion timing
   // Tasks are removed 30 seconds after completion: 3s for notification clear, then 27s additional delay
   static const Duration _notificationClearDelay = Duration(seconds: 3);
@@ -967,6 +973,9 @@ class DownloadManager {
       return;
     }
 
+    if (!_libraryChangesController.isClosed) {
+      _libraryChangesController.add(null);
+    }
     _updateTaskStatus(task.id, DownloadStatus.completed);
 
     await _notificationService.showDownloadNotification(
@@ -1028,6 +1037,7 @@ class DownloadManager {
   }
 
   void dispose() {
+    _libraryChangesController.close();
     _downloadsController.close();
   }
 }

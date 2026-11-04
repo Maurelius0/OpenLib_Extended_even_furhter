@@ -43,6 +43,9 @@ void main() {
               locale: const Locale('en'),
               home: const Scaffold(body: MyLibraryPage()))));
       await tester.pumpAndSettle();
+      expect(container.read(libraryStatusFilterProvider), ReadingStatus.unread);
+      expect(container.read(organizedLibraryProvider).map((b) => b.id),
+          books.where((b) => b.status == ReadingStatus.unread).map((b) => b.id));
       for (final entry in {
         'Unread': ReadingStatus.unread,
         'In Progress': ReadingStatus.inProgress,
@@ -65,8 +68,9 @@ void main() {
         }
         await tester.tap(chip);
         await tester.pumpAndSettle();
-        expect(container.read(libraryStatusFilterProvider), isNull);
-        expect(container.read(organizedLibraryProvider).length, count);
+        expect(container.read(libraryStatusFilterProvider), entry.value);
+        expect(container.read(organizedLibraryProvider).map((b) => b.id),
+            books.where((b) => b.status == entry.value).map((b) => b.id));
       }
     });
   }

@@ -271,7 +271,13 @@ final instanceManagerProvider =
 // Download Manager States
 final downloadManagerProvider = Provider<DownloadManager>((ref) {
   final manager = DownloadManager();
-  ref.onDispose(() => manager.dispose());
+  final subscription = manager.libraryChanges.listen((_) {
+    ref.invalidate(myLibraryProvider);
+  });
+  ref.onDispose(() {
+    subscription.cancel();
+    manager.dispose();
+  });
   return manager;
 });
 
@@ -481,7 +487,10 @@ final myLibraryProvider = FutureProvider((ref) async {
 /// The library enriched with tags, reading status and file sizes -
 /// the data every sort/filter view derives from.
 final libraryBooksProvider = FutureProvider<List<LibraryBook>>((ref) async {
-  final books = await dataBase.getAll();
+  // Connect completion notifications even when downloads finish offscreen.
+  ref.watch(downloadManagerProvider);
+  // Imports and restores already refresh this source; categories must follow it.
+  final books = await ref.watch(myLibraryProvider.future);
   if (books.isEmpty) return const [];
   final tags = await dataBase.getTagsForAll();
   final positions = await dataBase.getPositionsForAll();
@@ -525,9 +534,9 @@ final librarySortModeProvider =
 /// Active tag filters; empty set means no tag filter.
 final libraryTagFilterProvider = StateProvider<Set<String>>((ref) => {});
 
-/// Active reading-status filter; null means no status filter.
+/// One category is always selected, including on first opening the library.
 final libraryStatusFilterProvider =
-    StateProvider<ReadingStatus?>((ref) => null);
+    StateProvider<ReadingStatus>((ref) => ReadingStatus.unread);
 
 /// Free-text filter over library metadata (title, author, publisher,
 /// info line). Empty string means no filter.

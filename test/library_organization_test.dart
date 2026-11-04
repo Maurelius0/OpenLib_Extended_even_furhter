@@ -305,9 +305,12 @@ void main() {
       container.read(librarySortModeProvider.notifier).state =
           LibrarySortMode.titleAsc;
       final organized = container.read(organizedLibraryProvider);
-      expect(organized.map((b) => b.title), ['Ay Second', 'Zed First']);
+      expect(organized.map((b) => b.title), ['Ay Second']);
 
-      // Filter to the Favorites tag and only Ay remains hidden.
+      container.read(libraryStatusFilterProvider.notifier).state =
+          ReadingStatus.inProgress;
+
+      // The tag filter combines with the selected reading category.
       container.read(libraryTagFilterProvider.notifier).state = {'Favorites'};
       expect(
           container.read(organizedLibraryProvider).map((b) => b.id), ['z-first']);

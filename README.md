@@ -2,13 +2,19 @@
 
 A personal Android reader project based on [warreth/OpenlibExtended](https://github.com/warreth/OpenlibExtended), with a redesigned EPUB/PDF reading experience.
 
-## Current snapshot: Reader Test v13
+## Current source: Reader Test v15 with library category fixes
 
 - Page-by-page reading controls and saved reading preferences.
 - Inline font-size controls and a light/dark toggle.
 - Whole-book page counter and a slim progress slider.
 - Short downward swipe to dismiss enlarged images.
 - Reader startup-background improvements.
+- v14 EPUB link fixes and single-tap image opening.
+- v15 double-tap image zoom.
+- Consistent Unread / In Progress / Completed categories, including after downloads.
+
+The previously published APK remains v13; these newer source changes require a new build.
+See [library category fix and verification](docs/LIBRARY_CATEGORIES.md).
 
 See [approved design and validation notes](READER_DESIGN_V13.md), [test notes](READER_TEST.md), and [setup instructions](SETUP.md).
 

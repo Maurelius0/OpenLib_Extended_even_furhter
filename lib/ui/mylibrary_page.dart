@@ -212,7 +212,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     final allTags =
         ref.watch(libraryTagsProvider).valueOrNull ?? const <String>{};
 
-    Widget statusChip(String label, ReadingStatus? value) {
+    Widget statusChip(String label, ReadingStatus value) {
       final selected = statusFilter == value;
       return Padding(
         padding: const EdgeInsets.only(right: 6),
@@ -222,7 +222,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
           showCheckmark: false,
           onSelected: (_) {
             ref.read(libraryStatusFilterProvider.notifier).state =
-                selected ? null : value;
+                value;
           },
         ),
       );
@@ -271,10 +271,6 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     return libraryBooks.when(
       data: (data) {
         final organized = ref.watch(organizedLibraryProvider);
-        final anyFilterActive =
-            ref.watch(libraryTagFilterProvider).isNotEmpty ||
-                ref.watch(libraryStatusFilterProvider) != null ||
-                ref.watch(librarySearchQueryProvider).trim().isNotEmpty;
         if (data.isNotEmpty) {
           return RefreshIndicator(
             onRefresh: () => _refreshLibrary(),
@@ -302,7 +298,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
                       child: _buildFilterChips(context),
                     ),
                   ),
-                  if (organized.isEmpty && anyFilterActive)
+                  if (organized.isEmpty)
                     const SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.all(24),
