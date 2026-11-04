@@ -67,6 +67,7 @@ dart analyze lib/state/state.dart lib/services/download_manager.dart \
   test/library_organization_test.dart test/library_download_status_test.dart
 ```
 
-No new APK was built, and this change has not been tested on a physical Pixel.
-The published v13 APK is unchanged. The source preserves the saved v15 reader
+The signed v16 test APK now includes these changes; see READER_TEST_V16.md.
+Physical Pixel testing is still pending. The GitHub v13 release is unchanged.
+The source preserves the saved v15 reader
 improvements; the development signing key remains excluded from GitHub.

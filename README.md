@@ -13,7 +13,7 @@ A personal Android reader project based on [warreth/OpenlibExtended](https://git
 - v15 double-tap image zoom.
 - Library (all books) / In Progress / Completed categories, including after downloads.
 
-The previously published APK remains v13; these newer source changes require a new build.
+The latest signed test download is Reader Test v16; see [build and verification notes](READER_TEST_V16.md). The GitHub release remains v13.
 See [library category fix and verification](docs/LIBRARY_CATEGORIES.md).
 
 See [approved design and validation notes](READER_DESIGN_V13.md), [test notes](READER_TEST.md), and [setup instructions](SETUP.md).
