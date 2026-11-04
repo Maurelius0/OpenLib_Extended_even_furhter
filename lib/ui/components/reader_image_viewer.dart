@@ -26,8 +26,12 @@ class ReaderImageViewer extends StatefulWidget {
 }
 
 class _ReaderImageViewerState extends State<ReaderImageViewer>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final _slide = AnimationController.unbounded(vsync: this);
+  late final _zoom = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 180));
+  Matrix4Tween? _zoomTween;
+  Offset _doubleTapPoint = Offset.zero;
   bool _closing = false;
   final _transform = TransformationController();
   int _pointerCount = 0;
@@ -35,10 +39,46 @@ class _ReaderImageViewerState extends State<ReaderImageViewer>
   Offset _dragDistance = Offset.zero;
   bool _canDismiss = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _zoom.addListener(_animateZoom);
+  }
+
+  void _animateZoom() {
+    final tween = _zoomTween;
+    if (tween != null) {
+      _transform.value =
+          tween.transform(Curves.easeOutCubic.transform(_zoom.value));
+    }
+  }
+
+  void _onDoubleTap() {
+    if (_closing || _pointerCount > 1) return;
+    _zoom.stop();
+    _canDismiss = false;
+    final Matrix4 target;
+    if (_transform.value.getMaxScaleOnAxis() > 1.01) {
+      target = Matrix4.identity();
+    } else {
+      const scale = 2.5;
+      target = Matrix4.diagonal3Values(scale, scale, 1)
+        ..setTranslationRaw(-_doubleTapPoint.dx * (scale - 1),
+            -_doubleTapPoint.dy * (scale - 1), 0);
+    }
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _transform.value = target;
+    } else {
+      _zoomTween = Matrix4Tween(begin: _transform.value.clone(), end: target);
+      _zoom.forward(from: 0);
+    }
+  }
+
   // Observe touches without competing with InteractiveViewer's pinch/pan
   // recognizer. A second finger cancels dismissal for the whole interaction.
   void _onPointerDown(PointerDownEvent event) {
     if (_closing) return;
+    _zoom.stop();
     _pointerCount++;
     if (_pointerCount == 1) {
       _slide.stop();
@@ -112,6 +152,7 @@ class _ReaderImageViewerState extends State<ReaderImageViewer>
 
   @override
   void dispose() {
+    _zoom.dispose();
     _slide.dispose();
     _transform.dispose();
     super.dispose();
@@ -158,7 +199,11 @@ class _ReaderImageViewerState extends State<ReaderImageViewer>
               ),
         body: SafeArea(
             child: LayoutBuilder(
-                builder: (context, constraints) => InteractiveViewer(
+                builder: (context, constraints) => GestureDetector(
+                    onDoubleTapDown: (details) =>
+                        _doubleTapPoint = details.localPosition,
+                    onDoubleTap: _onDoubleTap,
+                    child: InteractiveViewer(
                       transformationController: _transform,
                       minScale: 1,
                       maxScale: 8,
@@ -170,6 +215,6 @@ class _ReaderImageViewerState extends State<ReaderImageViewer>
                                   fit: BoxFit.contain)
                               : Image.memory(widget.bytes,
                                   fit: BoxFit.contain)),
-                    ))),
+                    )))),
       );
 }

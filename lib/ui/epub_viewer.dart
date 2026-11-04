@@ -11,6 +11,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:epubx/epubx.dart';
 import 'package:open_file/open_file.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:openlib/l10n/app_localizations.dart';
 import 'package:openlib/services/epub_pages.dart';
 import 'package:openlib/services/epub_preferences.dart';
@@ -271,14 +272,47 @@ table{max-width:100%;font-size:.8em}pre{white-space:pre-wrap}body{touch-action:p
   }
 
   Future<void> _followLink(String target) async {
+    final external = epubExternalLink(target);
+    if (external != null) {
+      try {
+        if (await launchUrl(external, mode: LaunchMode.externalApplication)) {
+          return;
+        }
+      } catch (error) {
+        debugPrint('Could not open book website: $error');
+      }
+      if (mounted) {
+        showSnackBar(context: context, message: 'Unable to open this website.');
+      }
+      return;
+    }
     final split = target.indexOf('#');
-    final file = split < 0 ? target : target.substring(0, split);
+    final file = canonicalEpubPath(
+      split < 0 ? target : target.substring(0, split),
+    );
     final anchor = split < 0 ? null : target.substring(split + 1);
-    final chapter = _spine.indexWhere((name) => Uri.decodeFull(name) == file);
-    if (chapter < 0) return;
+    final chapter = _spine.indexWhere(
+      (name) => canonicalEpubPath(name) == file,
+    );
+    if (chapter < 0) {
+      if (mounted) {
+        showSnackBar(
+          context: context,
+          message: 'This book link points to an unavailable section.',
+        );
+      }
+      return;
+    }
     if (chapter == _chapter && anchor != null) {
-      await _web?.evaluateJavascript(
-          source: 'window.readerAnchor(${jsonEncode(anchor)})');
+      final found = await _web?.evaluateJavascript(
+        source: 'window.readerAnchor(${jsonEncode(anchor)})',
+      );
+      if (found == false && mounted) {
+        showSnackBar(
+          context: context,
+          message: 'This book link points to a missing anchor.',
+        );
+      }
     } else {
       await _openChapter(chapter, anchor: anchor);
     }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:epubx/epubx.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:html/parser.dart' as html;
@@ -8,24 +9,76 @@ void main() {
   test('contents links retain local destinations and fragment anchors', () {
     final book = EpubBook()..Content = EpubContent();
     book.Content!.Html!['Text/toc.xhtml'] = EpubTextContentFile()
-      ..Content = '<a href="chapter%201.xhtml#part%202">Chapter</a>'
+      ..Content =
+          '<a href="chapter%201.xhtml#part%202">Chapter</a>'
           '<a href="#local">Local</a><a href="https://example.com">External</a>'
-          '<h2 id="local">Heading</h2>';
+          '<a name="legacy"></a><h2 id="local">Heading</h2>';
     final body = html.parseFragment(epubSectionBody(book, 'Text/toc.xhtml'));
     final links = body.querySelectorAll('a');
-    expect(links[0].attributes['data-reader-target'],
-        'Text/chapter 1.xhtml#part 2');
+    expect(
+      links[0].attributes['data-reader-target'],
+      'Text/chapter 1.xhtml#part 2',
+    );
     expect(links[1].attributes['data-reader-target'], 'Text/toc.xhtml#local');
-    expect(links[2].attributes['data-reader-target'], isNull);
+    expect(links[2].attributes['data-reader-target'], 'https://example.com');
     expect(body.querySelector('h2')!.id, 'local');
+    expect(links[3].attributes['data-reader-target'], isNull);
+    expect(links[3].attributes['name'], 'legacy');
+    expect(links[0].attributes['href'], '#');
   });
+  test(
+    'web links are allowlisted while executable destinations stay inert',
+    () {
+      expect(
+        epubExternalLink('https://example.com/a?q=1#b')?.toString(),
+        'https://example.com/a?q=1#b',
+      );
+      expect(epubExternalLink('//example.com/path')?.scheme, 'https');
+      for (final url in [
+        'javascript:alert(1)',
+        'file:///etc/passwd',
+        'data:text/html,bad',
+        'intent://something',
+        'https:',
+        'chapter.xhtml',
+      ]) {
+        expect(epubExternalLink(url), isNull);
+      }
+      final book = EpubBook()..Content = EpubContent();
+      book.Content!.Html!['a.xhtml'] = EpubTextContentFile()
+        ..Content =
+            '<a href="javascript:alert(1)">Bad</a>'
+            '<a href="https://example.com?a=1&amp;b=2">Web</a>';
+      final links = html
+          .parseFragment(epubSectionBody(book, 'a.xhtml'))
+          .querySelectorAll('a');
+      expect(links.first.attributes['href'], isNull);
+      expect(links.first.attributes['data-reader-target'], isNull);
+      expect(
+        links.last.attributes['data-reader-target'],
+        'https://example.com?a=1&b=2',
+      );
+    },
+  );
+  test(
+    'canonical paths resolve dotted and encoded spine paths consistently',
+    () {
+      expect(canonicalEpubPath('./Text/a%20b.xhtml'), 'Text/a b.xhtml');
+      expect(canonicalEpubPath('Text/../Text/a b.xhtml'), 'Text/a b.xhtml');
+      expect(
+        epubLocalTarget('Text/start.xhtml', '../Text/a%20b.xhtml#part%202'),
+        'Text/a b.xhtml#part 2',
+      );
+    },
+  );
   test('SVG cover and raster graphics embed actual local image bytes', () {
     final book = EpubBook()..Content = EpubContent();
     book.Content!.Images!['Images/cover art.png'] = EpubByteContentFile()
       ..Content = [1, 2, 3]
       ..ContentMimeType = 'image/png';
     book.Content!.Html!['Text/cover.xhtml'] = EpubTextContentFile()
-      ..Content = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">'
+      ..Content =
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">'
           '<image width="600" height="800" xlink:href="../Images/cover%20art.png" /></svg>'
           '<img src="../Images/cover%20art.png" />';
     final body = html.parseFragment(epubSectionBody(book, 'Text/cover.xhtml'));
@@ -39,7 +92,7 @@ void main() {
       'javascript:alert(1)',
       '//example.com/a',
       'https://example.com',
-      '/etc/passwd'
+      '/etc/passwd',
     ]) {
       expect(epubLocalTarget('Text/a.xhtml', value), isNull);
     }
