@@ -21,6 +21,7 @@ import 'package:openlib/services/files.dart' show getFilePath;
 import 'package:openlib/services/database.dart' show MyLibraryDb;
 import 'package:openlib/ui/components/book_reader_shell.dart';
 import 'package:openlib/ui/components/snack_bar_widget.dart';
+import 'package:openlib/ui/components/reader_resume_refresh.dart';
 import 'package:openlib/state/state.dart'
     show
         filePathProvider,
@@ -214,6 +215,14 @@ class _EpubViewerState extends ConsumerState<EpubViewer>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) _save();
+  }
+
+  Future<void> _refreshAfterResume() async {
+    final web = _web;
+    if (web == null) return;
+    if (Platform.isAndroid) await web.resume();
+    if (!mounted || web != _web || !_ready) return;
+    await web.evaluateJavascript(source: 'window.readerResume?.()');
   }
 
   @override
@@ -542,7 +551,9 @@ table{max-width:100%;font-size:.8em}pre{white-space:pre-wrap}body{touch-action:p
         fonts: _ready && !_previewing ? _fonts : null,
         contents: _ready ? _contents : null,
         onToggleReady: (toggle) => _toggleControls = toggle,
-        child: _loading
+        child: ReaderResumeRefresh(
+          onResume: _refreshAfterResume,
+          child: _loading
             ? const Center(child: CircularProgressIndicator())
             : _error != null
                 ? Center(child: Text('Unable to open EPUB: $_error'))
@@ -669,5 +680,6 @@ table{max-width:100%;font-size:.8em}pre{white-space:pre-wrap}body{touch-action:p
                       }
                     },
                   )),
+        ),
       );
 }
