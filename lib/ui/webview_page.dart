@@ -17,6 +17,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:openlib/services/platform_utils.dart';
 import 'package:openlib/services/logger.dart';
 import 'package:openlib/services/ddos_protection_handler.dart';
+import 'package:openlib/ui/components/book_loading_indicator.dart';
 
 class Webview extends ConsumerStatefulWidget {
   const Webview({
@@ -444,9 +445,8 @@ class _WebviewState extends ConsumerState<Webview> {
                         SizedBox(
                           width: 40,
                           height: 40,
-                          child: CircularProgressIndicator(
+                          child: BookLoadingIndicator(
                             color: Theme.of(context).colorScheme.secondary,
-                            strokeWidth: 3,
                           ),
                         ),
                         const SizedBox(height: 20),

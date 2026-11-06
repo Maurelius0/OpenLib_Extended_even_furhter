@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:openlib/services/download_manager.dart';
 import 'package:openlib/state/state.dart';
 import 'package:openlib/ui/webview_page.dart';
+import 'book_loading_indicator.dart';
 
 class ActiveDownloadsWidget extends ConsumerWidget {
   const ActiveDownloadsWidget({super.key});
@@ -469,19 +470,6 @@ class _DownloadItemState extends ConsumerState<_DownloadItem> {
                 ),
               ],
             ),
-          ] else if (task.status == DownloadStatus.downloadingMirrors ||
-              task.status == DownloadStatus.fetchingMirrors ||
-              task.status == DownloadStatus.queued ||
-              task.status == DownloadStatus.verifying) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(
-                minHeight: 6,
-                backgroundColor:
-                    Theme.of(context).colorScheme.tertiary.withAlpha(30),
-                color: Theme.of(context).colorScheme.secondary,
-              ),
-            ),
           ] else if (task.status == DownloadStatus.failed) ...[
             if (task.errorMessage?.contains('Manual verification required') ==
                 true) ...[
@@ -529,8 +517,7 @@ class _DownloadItemState extends ConsumerState<_DownloadItem> {
                           ? const SizedBox(
                               width: 12,
                               height: 12,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
+                              child: BookLoadingIndicator(
                                 color: Colors.white,
                               ),
                             )
@@ -620,8 +607,7 @@ class _DownloadItemState extends ConsumerState<_DownloadItem> {
         return SizedBox(
           width: 16,
           height: 16,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
+          child: BookLoadingIndicator(
             color: _getStatusColor(status, context),
           ),
         );
@@ -629,8 +615,7 @@ class _DownloadItemState extends ConsumerState<_DownloadItem> {
         return SizedBox(
           width: 16,
           height: 16,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
+          child: BookLoadingIndicator(
             color: _getStatusColor(status, context),
           ),
         );
@@ -650,8 +635,7 @@ class _DownloadItemState extends ConsumerState<_DownloadItem> {
         return SizedBox(
           width: 16,
           height: 16,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
+          child: BookLoadingIndicator(
             color: _getStatusColor(status, context),
           ),
         );

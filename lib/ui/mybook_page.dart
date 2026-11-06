@@ -11,6 +11,7 @@ import 'package:openlib/services/share_book.dart';
 import 'package:openlib/ui/components/snack_bar_widget.dart';
 import 'package:openlib/ui/components/book_info_widget.dart';
 import 'package:openlib/ui/components/file_buttons_widget.dart';
+import 'package:openlib/ui/components/book_loading_indicator.dart';
 
 class BookPage extends StatelessWidget {
   const BookPage({super.key, required this.id});
@@ -85,7 +86,7 @@ class BookPage extends StatelessWidget {
                       child: SizedBox(
                     width: 25,
                     height: 25,
-                    child: CircularProgressIndicator(
+                    child: BookLoadingIndicator(
                       color: Theme.of(context).colorScheme.secondary,
                     ),
                   ));

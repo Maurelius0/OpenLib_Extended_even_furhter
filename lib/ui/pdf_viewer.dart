@@ -17,6 +17,7 @@ import 'package:pdfrx/pdfrx.dart';
 // Project imports:
 import 'package:openlib/services/files.dart' show getFilePath;
 import 'package:openlib/ui/components/snack_bar_widget.dart';
+import 'package:openlib/ui/components/book_loading_indicator.dart';
 
 import 'package:openlib/state/state.dart'
     show
@@ -147,11 +148,11 @@ class _PdfViewPageState extends ConsumerState<PdfViewPage>
       next: _page < _pageCount ? () => _turn(1) : null,
       onToggleReady: (toggle) => _toggleControls = toggle,
       child: ref.watch(filePathProvider(widget.fileName)).when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(child: BookLoadingIndicator()),
             error: (e, _) => Center(child: Text('Unable to open PDF: $e')),
             data: (path) => ref.watch(getBookPosition(widget.fileName)).when(
                   loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                      const Center(child: BookLoadingIndicator()),
                   error: (e, _) =>
                       Center(child: Text('Unable to load position: $e')),
                   data: (saved) => PdfDocumentViewBuilder(
@@ -160,7 +161,7 @@ class _PdfViewPageState extends ConsumerState<PdfViewPage>
                         Center(child: Text('Unable to render PDF: $error')),
                     builder: (context, document) {
                       if (document == null) {
-                        return const Center(child: CircularProgressIndicator());
+                        return const Center(child: BookLoadingIndicator());
                       }
                       final count = document.pages.length;
                       if (count == 0) {

@@ -10,6 +10,7 @@ import 'package:openlib/services/instance_manager.dart';
 import 'package:openlib/services/slum_health_service.dart';
 import 'package:openlib/state/state.dart';
 import 'package:openlib/ui/components/page_title_widget.dart';
+import 'package:openlib/ui/components/book_loading_indicator.dart';
 
 /// Manages every mirror the app can talk to, grouped by service. Each
 /// mirror can be toggled, reordered within its group, and health-
@@ -277,14 +278,14 @@ class _InstancesPageState extends ConsumerState<InstancesPage> {
               child: SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2)),
+                  child: BookLoadingIndicator()),
             ),
           IconButton(
             icon: _isPinging
                 ? const SizedBox(
                     width: 22,
                     height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: BookLoadingIndicator(),
                   )
                 : const Icon(Icons.speed),
             onPressed: _isPinging ? null : _pingAllInstances,
@@ -337,7 +338,7 @@ class _InstancesPageState extends ConsumerState<InstancesPage> {
                   }
                   return _buildGroupedList(context, instances);
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: BookLoadingIndicator()),
                 error: (error, stack) => Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

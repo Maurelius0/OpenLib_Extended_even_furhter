@@ -16,6 +16,7 @@ import 'package:openlib/ui/components/error_widget.dart';
 import 'package:openlib/ui/components/file_buttons_widget.dart';
 import 'package:openlib/ui/components/snack_bar_widget.dart';
 import 'package:openlib/ui/webview_page.dart';
+import 'package:openlib/ui/components/book_loading_indicator.dart';
 import 'package:openlib/state/state.dart'
     show
         bookInfoProvider,
@@ -83,9 +84,8 @@ class BookInfoPage extends ConsumerWidget {
               child: SizedBox(
             width: 25,
             height: 25,
-            child: CircularProgressIndicator(
+            child: BookLoadingIndicator(
               color: Theme.of(context).colorScheme.secondary,
-              strokeCap: StrokeCap.round,
             ),
           ));
         },
@@ -376,9 +376,8 @@ class _ActionButtonWidgetState extends ConsumerState<ActionButtonWidget> {
         return Text(error.toString());
       },
       loading: () {
-        return CircularProgressIndicator(
+        return BookLoadingIndicator(
           color: Theme.of(context).colorScheme.secondary,
-          strokeCap: StrokeCap.round,
         );
       },
     );

@@ -29,6 +29,7 @@ import 'package:openlib/ui/components/snack_bar_widget.dart';
 import 'package:openlib/ui/about_page.dart';
 import 'package:openlib/ui/instances_page.dart';
 import 'package:openlib/ui/onboarding/onboarding_page.dart';
+import 'package:openlib/ui/components/book_loading_indicator.dart';
 
 import 'package:openlib/state/state.dart'
     show
@@ -211,7 +212,7 @@ class _SettingsTile extends StatelessWidget {
         ? const SizedBox(
             width: 22,
             height: 22,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            child: BookLoadingIndicator(),
           )
         : const Icon(Icons.chevron_right);
 
@@ -677,11 +678,11 @@ class _InstanceSelectorWidgetState
               },
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: BookLoadingIndicator()),
           error: (error, stack) => _instanceLoadError(context),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: BookLoadingIndicator()),
       error: (error, stack) => _instanceLoadError(context),
     );
   }

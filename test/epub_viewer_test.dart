@@ -18,6 +18,7 @@ import 'package:path_provider_platform_interface/path_provider_platform_interfac
 
 // Project imports:
 import 'package:openlib/ui/epub_viewer.dart';
+import 'package:openlib/ui/components/book_loading_indicator.dart';
 import 'package:openlib/l10n/app_localizations.dart';
 import 'package:openlib/services/database.dart' show MyLibraryDb;
 import 'package:openlib/state/state.dart' show filePathProvider;
@@ -142,7 +143,7 @@ void main() {
     ));
 
     await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(BookLoadingIndicator), findsOneWidget);
     expect(find.text('OpenlibExtended'), findsNothing);
     expect(tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
         const Color(0xff211e1a));

@@ -14,6 +14,7 @@ import 'package:openlib/ui/results_page.dart';
 import 'components/snack_bar_widget.dart';
 // Import the new API Service (adjust path as necessary)
 import 'package:openlib/services/google_suggest_api.dart';
+import 'package:openlib/ui/components/book_loading_indicator.dart';
 
 import 'package:openlib/state/state.dart'
     show
@@ -181,8 +182,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                             ? SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.0,
+                                child: BookLoadingIndicator(
                                   color:
                                       Theme.of(context).colorScheme.secondary,
                                 ),

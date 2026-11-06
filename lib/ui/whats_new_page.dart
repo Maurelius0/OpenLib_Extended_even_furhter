@@ -11,6 +11,7 @@ import 'package:openlib/main.dart' show MainScreen;
 import 'package:openlib/services/instance_manager.dart';
 import 'package:openlib/services/search_manager.dart';
 import 'package:openlib/services/update_checker.dart';
+import 'package:openlib/ui/components/book_loading_indicator.dart';
 
 /// Shown once after an app upgrade (not on first install): what's
 /// new, plus a tab that offers re-syncing the stored mirror list
@@ -276,7 +277,7 @@ class _SourcesTab extends ConsumerWidget {
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: BookLoadingIndicator(),
                   )
                 : const Icon(Icons.sync_rounded),
             label: Text(l10n.whatsNewUpdateInstances),

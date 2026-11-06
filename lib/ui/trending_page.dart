@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:openlib/ui/components/error_widget.dart';
 import 'package:openlib/ui/results_page.dart';
 import 'extensions.dart';
+import 'package:openlib/ui/components/book_loading_indicator.dart';
 
 import 'package:openlib/state/state.dart'
     show getTrendingBooks, enableFiltersState;
@@ -141,9 +142,8 @@ class TrendingPage extends ConsumerWidget {
               child: SizedBox(
             width: 25,
             height: 25,
-            child: CircularProgressIndicator(
+            child: BookLoadingIndicator(
               color: Theme.of(context).colorScheme.secondary,
-              strokeCap: StrokeCap.round,
             ),
           ));
         });

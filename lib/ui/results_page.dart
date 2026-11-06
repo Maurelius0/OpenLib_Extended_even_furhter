@@ -13,6 +13,7 @@ import 'package:openlib/ui/book_info_page.dart';
 import 'package:openlib/ui/components/book_card_widget.dart';
 import 'package:openlib/ui/components/error_widget.dart';
 import 'package:openlib/ui/components/page_title_widget.dart';
+import 'package:openlib/ui/components/book_loading_indicator.dart';
 
 // A constant for the 'No Results Found' text color for better theming/readability.
 const Color _kNoResultsTextColor = Color(0xFF4D4D4D);
@@ -198,7 +199,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                           child: SizedBox(
                             width: 22,
                             height: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2.5),
+                            child: BookLoadingIndicator(),
                           ),
                         ),
                       ),
@@ -289,9 +290,8 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                   child: SizedBox(
                     width: 25,
                     height: 25,
-                    child: CircularProgressIndicator(
+                    child: BookLoadingIndicator(
                       color: Theme.of(context).colorScheme.secondary,
-                      strokeWidth: 3.0,
                     ),
                   ),
                 ),

@@ -17,6 +17,7 @@ import 'package:openlib/ui/components/error_widget.dart';
 import 'package:openlib/ui/components/page_title_widget.dart';
 import 'package:openlib/ui/extensions.dart';
 import 'package:openlib/ui/mybook_page.dart';
+import 'package:openlib/ui/components/book_loading_indicator.dart';
 
 class MyLibraryPage extends ConsumerStatefulWidget {
   const MyLibraryPage({super.key});
@@ -151,8 +152,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
                       ? SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
+                          child: BookLoadingIndicator(
                             color: Theme.of(context).colorScheme.secondary,
                           ),
                         )
@@ -272,7 +272,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
       data: (data) {
         final organized = ref.watch(organizedLibraryProvider);
         if (data.isNotEmpty) {
-          return RefreshIndicator(
+          return _LibraryRefreshIndicator(
             onRefresh: () => _refreshLibrary(),
             child: Padding(
               padding: const EdgeInsets.only(left: 5, right: 5, top: 10),
@@ -343,8 +343,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
                               ? SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
+                                  child: BookLoadingIndicator(
                                     color:
                                         Theme.of(context).colorScheme.secondary,
                                   ),
@@ -364,7 +363,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
             ),
           );
         } else {
-          return RefreshIndicator(
+          return _LibraryRefreshIndicator(
             onRefresh: () => _refreshLibrary(),
             child: SingleChildScrollView(
               controller: _scrollController,
@@ -419,7 +418,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
             child: SizedBox(
           width: 25,
           height: 25,
-          child: CircularProgressIndicator(
+          child: BookLoadingIndicator(
             color: Theme.of(context).colorScheme.secondary,
           ),
         ));
@@ -558,6 +557,50 @@ class _TagEditorSheetState extends ConsumerState<_TagEditorSheet> {
           ),
         );
       },
+    );
+  }
+}
+
+class _LibraryRefreshIndicator extends StatefulWidget {
+  const _LibraryRefreshIndicator({required this.onRefresh, required this.child});
+
+  final Future<void> Function() onRefresh;
+  final Widget child;
+
+  @override
+  State<_LibraryRefreshIndicator> createState() =>
+      _LibraryRefreshIndicatorState();
+}
+
+class _LibraryRefreshIndicatorState extends State<_LibraryRefreshIndicator> {
+  RefreshIndicatorStatus? _status;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        RefreshIndicator.noSpinner(
+          onRefresh: widget.onRefresh,
+          onStatusChange: (status) => setState(() => _status = status),
+          child: widget.child,
+        ),
+        if (_status == RefreshIndicatorStatus.armed ||
+            _status == RefreshIndicatorStatus.snap ||
+            _status == RefreshIndicatorStatus.refresh)
+          const Positioned(
+            top: 12,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: Center(
+                child: SizedBox.square(
+                  dimension: 44,
+                  child: BookLoadingIndicator(),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
