@@ -4,7 +4,6 @@ import 'package:openlib/l10n/app_localizations.dart';
 
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:async'; // For Timer/Debounce
 
 // Project imports:
 import 'package:openlib/services/database.dart';
@@ -12,9 +11,6 @@ import 'package:openlib/ui/components/active_downloads_widget.dart';
 import 'package:openlib/ui/components/page_title_widget.dart';
 import 'package:openlib/ui/results_page.dart';
 import 'components/snack_bar_widget.dart';
-// Import the new API Service (adjust path as necessary)
-import 'package:openlib/services/google_suggest_api.dart';
-import 'package:openlib/ui/components/book_loading_indicator.dart';
 
 import 'package:openlib/state/state.dart'
     show
@@ -33,19 +29,6 @@ import 'package:openlib/state/state.dart'
         yearValues,
         enableFiltersState;
 
-// ====================================================================
-// Suggestion Providers (New)
-// ====================================================================
-
-// Provider to hold the list of suggestions
-final searchSuggestionProvider = StateProvider<List<String>>((ref) => []);
-// Provider to show/hide the loading indicator
-final suggestionsLoadingProvider = StateProvider<bool>((ref) => false);
-
-// ====================================================================
-// SearchPage Implementation (Stateful Conversion for API & Debounce)
-// ====================================================================
-
 class SearchPage extends ConsumerStatefulWidget {
   const SearchPage({super.key});
 
@@ -54,11 +37,8 @@ class SearchPage extends ConsumerStatefulWidget {
 }
 
 class _SearchPageState extends ConsumerState<SearchPage> {
-  Timer? _debounce;
   late final TextEditingController _searchController;
   final TextEditingController _advancedController = TextEditingController();
-  final GoogleSuggestApi _apiService =
-      GoogleSuggestApi(); // Instantiate API service
 
   @override
   void initState() {
@@ -67,7 +47,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     _searchController =
         TextEditingController(text: ref.read(searchQueryProvider));
 
-    // Listener to update the TextField when state changes (e.g., when a suggestion is tapped)
+    // Keep the text field synchronized with search state changes.
     ref.listenManual(searchQueryProvider, (previous, next) {
       if (_searchController.text != next) {
         _searchController.text = next;
@@ -80,46 +60,18 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
     _searchController.dispose();
     _advancedController.dispose();
     super.dispose();
   }
 
-  // *** API LOGIC ***
-  Future<void> _fetchSuggestions(String query) async {
-    final cleanQuery = query.trim();
-    if (cleanQuery.isEmpty) {
-      ref.read(searchSuggestionProvider.notifier).state = [];
-      return;
-    }
-
-    ref.read(suggestionsLoadingProvider.notifier).state = true;
-
-    // Call the Google Suggest API function
-    final realSuggestions = await _apiService.fetchSuggestions(cleanQuery);
-
-    ref.read(searchSuggestionProvider.notifier).state = realSuggestions;
-    ref.read(suggestionsLoadingProvider.notifier).state = false;
-  }
-  // *****************
-
   void _onSearchQueryChanged(String value) {
-    // 1. Update the Riverpod state immediately
     ref.read(searchQueryProvider.notifier).state = value;
-
-    // 2. Debounce the API call to limit requests while the user is typing
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      _fetchSuggestions(value);
-    });
   }
 
   void onSubmit(BuildContext context) {
     final searchQuery = ref.read(searchQueryProvider);
     if (searchQuery.isNotEmpty) {
-      // Clear suggestions list before navigating
-      ref.read(searchSuggestionProvider.notifier).state = [];
       ref.read(enableFiltersState.notifier).state = true;
       Navigator.push(context,
           MaterialPageRoute(builder: (BuildContext context) {
@@ -138,12 +90,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final dropDownFileTypeValue = ref.watch(selectedFileTypeState);
     final dropdownLanguageValue = ref.watch(selectedLanguageState);
     final dropdownYearValue = ref.watch(selectedYearState);
-
-    // Watch suggestion states
-    final suggestions =
-        ref.watch(searchSuggestionProvider); // The list of titles
-    final isLoadingSuggestions =
-        ref.watch(suggestionsLoadingProvider); // Loading state
 
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
@@ -177,20 +123,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   suffixIcon: IconButton(
                     padding: const EdgeInsets.only(right: 5),
                     color: Theme.of(context).colorScheme.secondary,
-                    icon:
-                        isLoadingSuggestions // Show loading spinner if fetching suggestions
-                            ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: BookLoadingIndicator(
-                                  color:
-                                      Theme.of(context).colorScheme.secondary,
-                                ),
-                              )
-                            : const Icon(
-                                Icons.search,
-                                size: 23,
-                              ),
+                    icon: const Icon(Icons.search, size: 23),
                     onPressed: () => onSubmit(context), // <--- Simplified call
                   ),
                   filled: true,
@@ -205,55 +138,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
-                onChanged:
-                    _onSearchQueryChanged, // <--- Calls the debounced function
+                onChanged: _onSearchQueryChanged,
               ),
             ),
-
-            // --- Suggestions List (NEW) ---
-            if (suggestions.isNotEmpty && _searchController.text.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(left: 15, right: 15, top: 8),
-                child: Material(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(10),
-                  elevation: 2,
-                  clipBehavior: Clip.antiAlias,
-                  child: Container(
-                    constraints: const BoxConstraints(maxHeight: 250),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: suggestions.length,
-                      itemBuilder: (context, index) {
-                        final suggestion = suggestions[index];
-                        return ListTile(
-                          dense: true,
-                          title: Text(
-                            suggestion,
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Theme.of(context).colorScheme.onSurface),
-                          ),
-                          leading: const Icon(Icons.book, size: 18),
-                          onTap: () {
-                            // 1. Update the state with the selected suggestion
-                            ref.read(searchQueryProvider.notifier).state =
-                                suggestion;
-
-                            // 2. Clear the suggestion list
-                            ref.read(searchSuggestionProvider.notifier).state =
-                                [];
-
-                            // 3. Immediately perform search
-                            onSubmit(context);
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            // -----------------------------
 
             // --- Advanced Search Panel ---
             _AdvancedSearchPanel(controller: _advancedController),
