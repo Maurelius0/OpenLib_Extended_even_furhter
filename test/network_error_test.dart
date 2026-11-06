@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
 import 'package:openlib/services/network_error.dart';
@@ -37,6 +39,17 @@ void main() {
       final networkError = NetworkError.fromException(dioException);
       expect(networkError.type, equals(NetworkErrorType.forbidden));
       expect(networkError.userMessage, contains('region'));
+    });
+
+    test('Async timeout diagnosis keeps connectivity uncertainty', () async {
+      for (final error in [TimeoutException('Request expired'), 'request timeout']) {
+        final result = await NetworkError.fromExceptionAsync(
+          error,
+          targetHost: 'https://unresolvable.invalid',
+        );
+        expect(result.type, NetworkErrorType.timeout);
+        expect(result.userMessage, 'Connection timed out');
+      }
     });
 
     test('Identifies timeout errors correctly', () {

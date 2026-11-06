@@ -64,7 +64,7 @@ class NetworkError implements Exception {
 
     // Handle TimeoutException - perform additional diagnostics
     if (error is TimeoutException) {
-      return await _diagnoseTimeoutError(error, logger, targetHost);
+      return _diagnoseTimeoutError(error, logger, targetHost);
     }
 
     // Handle DioException types
@@ -100,7 +100,7 @@ class NetworkError implements Exception {
 
     // Handle timeout string markers
     if (error.toString().toLowerCase().contains("timeout")) {
-      return await _diagnoseTimeoutError(error, logger, targetHost);
+      return _diagnoseTimeoutError(error, logger, targetHost);
     }
 
     // Default unknown error
@@ -191,49 +191,17 @@ class NetworkError implements Exception {
     );
   }
 
-  // Diagnose timeout errors with connectivity checks
-  static Future<NetworkError> _diagnoseTimeoutError(
-      dynamic error, AppLogger logger, String? targetHost) async {
-    logger.debug("Diagnosing timeout error", tag: "NetworkError");
-
-    // Check if we have internet at all
-    final hasInternet = await ConnectivityChecker.hasInternetConnection();
-
-    if (!hasInternet) {
-      logger.debug("No internet connection detected", tag: "NetworkError");
-      return NetworkError(
-        type: NetworkErrorType.noInternet,
-        userMessage: "No internet connection",
-        solution:
-            "Your device is not connected to the internet.\n\n🔧 Check that:\n• WiFi or mobile data is enabled\n• Airplane mode is off\n• You have signal/coverage",
-        technicalDetails: "Timeout + no internet connectivity detected",
-      );
-    }
-
-    // Internet works, check if we can reach the target host
-    if (targetHost != null) {
-      final canReachHost = await ConnectivityChecker.canReachHost(targetHost);
-
-      if (!canReachHost) {
-        logger.debug("Cannot resolve host: $targetHost", tag: "NetworkError");
-        return NetworkError(
-          type: NetworkErrorType.dnsError,
-          userMessage: "Cannot reach the server",
-          solution:
-              "The site \"$targetHost\" cannot be reached. Your ISP may be blocking it.\n\n🔧 Solutions:\n• Use a VPN (recommended)\n• Change DNS to 1.1.1.1 or 8.8.8.8\n• Try a different network",
-          technicalDetails: "Host unreachable: $targetHost",
-        );
-      }
-    }
-
-    // Can reach internet and host, but still timed out - server issue or throttling
-    logger.debug("Internet OK but request timed out - likely server issue",
-        tag: "NetworkError");
+  // A timeout cannot establish whether the phone is offline or the server is
+  // unavailable. Use the failed request itself, without probing a third party.
+  static NetworkError _diagnoseTimeoutError(
+      dynamic error, AppLogger logger, String? targetHost) {
+    logger.debug('Request timed out',
+        tag: 'NetworkError', metadata: {'targetHost': targetHost});
     return NetworkError(
       type: NetworkErrorType.timeout,
-      userMessage: "Server not responding",
+      userMessage: 'Connection timed out',
       solution:
-          "The server is taking too long to respond.\n\n🔧 This could mean:\n• The server is overloaded\n• Your connection is being throttled\n• The site may be blocking your IP\n\nTry:\n• Use a VPN\n• Try again in a few minutes\n• Try a different mirror in Settings",
+          'The request did not finish in time. Your connection or the server may be unavailable or slow. Check your connection and try again. If the problem continues, try a different mirror in Settings.',
       technicalDetails: error.toString(),
     );
   }
@@ -551,49 +519,5 @@ class NetworkError implements Exception {
     }
 
     return false;
-  }
-}
-
-// Extension to check internet connectivity
-class ConnectivityChecker {
-  static final AppLogger _logger = AppLogger();
-
-  // Quick check if device can reach the internet
-  static Future<bool> hasInternetConnection() async {
-    try {
-      final result = await InternetAddress.lookup("google.com");
-      final hasConnection =
-          result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-      _logger.debug(
-        "Internet connectivity check",
-        tag: "Connectivity",
-        metadata: {"hasConnection": hasConnection},
-      );
-      return hasConnection;
-    } on SocketException {
-      _logger.debug("No internet connection detected", tag: "Connectivity");
-      return false;
-    } catch (e) {
-      _logger.debug(
-        "Connectivity check failed",
-        tag: "Connectivity",
-        metadata: {"error": e.toString()},
-      );
-      return false;
-    }
-  }
-
-  // Check if a specific host is reachable
-  static Future<bool> canReachHost(String host) async {
-    try {
-      final uri = Uri.parse(host);
-      final hostname = uri.host.isNotEmpty ? uri.host : host;
-      final result = await InternetAddress.lookup(hostname);
-      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-    } on SocketException {
-      return false;
-    } catch (e) {
-      return false;
-    }
   }
 }
