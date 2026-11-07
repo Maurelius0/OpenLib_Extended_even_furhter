@@ -386,8 +386,15 @@ void main() {
     toggle!();
     await tester.pump();
     expect(find.byTooltip('Library'), findsOneWidget); // exiting, fading
-    expect(tester.widget<IgnorePointer>(
-        find.byKey(const Key('reader-top-fade')).first).ignoring, isTrue);
+    expect(
+      tester.widget<IgnorePointer>(
+        find.descendant(
+          of: find.byKey(const Key('reader-top-fade')),
+          matching: find.byType(IgnorePointer),
+        ).first,
+      ).ignoring,
+      isTrue,
+    );
     await tester.pump(const Duration(milliseconds: 170));
     expect(find.byTooltip('Library'), findsNothing);
     expect(find.text('Jump'), findsNothing);
@@ -417,8 +424,15 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 170));
     expect(find.byTooltip('Library'), findsOneWidget);
-    expect(tester.widget<IgnorePointer>(
-        find.byKey(const Key('reader-top-fade')).first).ignoring, isFalse);
+    expect(
+      tester.widget<IgnorePointer>(
+        find.descendant(
+          of: find.byKey(const Key('reader-top-fade')),
+          matching: find.byType(IgnorePointer),
+        ).first,
+      ).ignoring,
+      isFalse,
+    );
     expect(tester.takeException(), isNull);
   });
 }
