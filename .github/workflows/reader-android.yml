@@ -1,0 +1,155 @@
+name: Reader Android build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/reader-android.yml'
+      - 'android/**'
+      - 'assets/**'
+      - 'google_fonts/**'
+      - 'lib/**'
+      - 'test/**'
+      - 'third_party/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reader-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Test and build Android
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android API 36 and build tools
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Install pinned Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+
+      - name: Print toolchain versions
+        run: |
+          flutter --version
+          java -version
+
+      - name: Install locked Dart dependencies
+        run: flutter pub get --enforce-lockfile
+
+      - name: Test reader functionality
+        run: |
+          flutter test \
+            test/book_reader_shell_test.dart \
+            test/book_seek_slider_test.dart \
+            test/reader_image_viewer_test.dart \
+            test/library_status_tabs_test.dart \
+            test/reader_screen_timeout_test.dart
+
+      # Always compile an APK to catch Android-specific build regressions.
+      # A CI debug keystore is disposable and CANNOT update an installed
+      # APK signed with the historical reader-test certificate.
+      - name: Verify Android compilation (not an installable update)
+        run: flutter build apk --debug --target-platform android-arm64
+
+      - name: Restore original signing identity if configured
+        id: signing
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.READER_ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.READER_ANDROID_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.READER_ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.READER_ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$KEYSTORE_BASE64" ]]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "The original signing key has not been configured. CI compilation succeeded, but no installable update will be published."
+            exit 0
+          fi
+          for var in STORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [[ -z "${!var}" ]]; then
+              echo "::error::Original signing configuration incomplete: $var"
+              exit 1
+            fi
+          done
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/reader-release.jks
+          chmod 600 android/app/reader-release.jks
+          fingerprint="$(keytool -list -v \
+            -keystore android/app/reader-release.jks \
+            -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" \
+            | sed -n 's/.*SHA256: //p' | head -n 1 \
+            | tr -d ':' | tr '[:upper:]' '[:lower:]')"
+          expected="032279ab78112bdd3bf49a31721f3cbb81f2771dddac5a57e5c82312837f38cf"
+          if [[ "$fingerprint" != "$expected" ]]; then
+            echo "::error::Signing certificate does not match the existing reader test APK; refusing to create an incompatible update."
+            exit 1
+          fi
+          {
+            printf 'storeFile=reader-release.jks\n'
+            printf 'storePassword=%s\n' "$STORE_PASSWORD"
+            printf 'keyAlias=%s\n' "$KEY_ALIAS"
+            printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+          } > android/key.properties
+          chmod 600 android/key.properties
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+
+      - name: Build signed arm64 update APK
+        if: steps.signing.outputs.configured == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          version_code=$((10000 + GITHUB_RUN_NUMBER))
+          flutter build apk --release --target-platform android-arm64 \
+            --build-name=1.0.12 --build-number="$version_code"
+          test -s build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Verify release signature
+        if: steps.signing.outputs.configured == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="build/app/outputs/flutter-apk/app-release.apk"
+          sdk="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          signer="$sdk/build-tools/36.0.0/apksigner"
+          "$signer" verify --verbose --print-certs "$apk" > /tmp/reader-apk-verification.txt
+          actual="$(sed -n 's/.*certificate SHA-256 digest: //p' /tmp/reader-apk-verification.txt \
+            | head -n 1 | tr -d ':' | tr '[:upper:]' '[:lower:]')"
+          expected="032279ab78112bdd3bf49a31721f3cbb81f2771dddac5a57e5c82312837f38cf"
+          if [[ "$actual" != "$expected" ]]; then
+            echo "::error::Built APK has the wrong signing identity"
+            exit 1
+          fi
+          sha256sum "$apk"
+
+      # Artifacts are available in the workflow run after successful signing.
+      # No automatic Release is created; explicit testing comes first.
+      - name: Upload verified update APK
+        if: steps.signing.outputs.configured == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-android-signed-${{ github.run_number }}
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 30
