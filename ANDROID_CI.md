@@ -21,14 +21,22 @@ To produce an APK that can be installed over the existing reader test app,
 recover the **original private keystore and credentials** used for V13–V16.
 GitHub Actions cannot derive the signing key from a compiled APK.
 
-Configure these repository **Actions secrets** in GitHub Settings >
-Secrets and variables > Actions (never commit or paste the credentials):
+The original development keystore was recovered from an older private
+project archive and its certificate fingerprint matches V13–V16. Preserve
+an offline copy of it.
 
-- `READER_ANDROID_KEYSTORE_BASE64`: base64 encoding of the binary keystore,
-  generated with `base64 -w 0 your-original-keystore.jks` on Linux
-- `READER_ANDROID_STORE_PASSWORD`: keystore password
-- `READER_ANDROID_KEY_ALIAS`: original signing key alias
-- `READER_ANDROID_KEY_PASSWORD`: key password
+Configure **one repository Actions secret** in GitHub **Settings > Secrets
+and variables > Actions > New repository secret** (never commit its value):
+
+- Name: `READER_ANDROID_KEYSTORE_BASE64`
+- Value: one-line base64 encoding of the original keystore
+  (`base64 -w 0 reader-original-test-signing.jks` on Linux)
+
+The existing test key uses the standard Android debug-key credentials:
+alias `androiddebugkey`, keystore/key passwords `android`. These values
+are not secret; the **private keystore file** is. The workflow checks the
+certificate fingerprint before it uses the key. Do not replace the keystore
+with one created by a new Android SDK installation.
 
 When those are present, the workflow verifies the key certificate SHA-256
 against the historical test build's certificate:

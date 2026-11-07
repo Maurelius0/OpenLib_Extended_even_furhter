@@ -78,9 +78,6 @@ jobs:
         shell: bash
         env:
           KEYSTORE_BASE64: ${{ secrets.READER_ANDROID_KEYSTORE_BASE64 }}
-          STORE_PASSWORD: ${{ secrets.READER_ANDROID_STORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.READER_ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.READER_ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
           if [[ -z "$KEYSTORE_BASE64" ]]; then
@@ -88,12 +85,11 @@ jobs:
             echo "The original signing key has not been configured. CI compilation succeeded, but no installable update will be published."
             exit 0
           fi
-          for var in STORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
-            if [[ -z "${!var}" ]]; then
-              echo "::error::Original signing configuration incomplete: $var"
-              exit 1
-            fi
-          done
+          # The historical reader-test key uses the standard Android debug-key
+          # alias/password. Only its private keystore bytes need to be secret.
+          KEY_ALIAS=androiddebugkey
+          STORE_PASSWORD=android
+          KEY_PASSWORD=android
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/reader-release.jks
           chmod 600 android/app/reader-release.jks
           fingerprint="$(keytool -list -v \
