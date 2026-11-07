@@ -81,9 +81,8 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "$KEYSTORE_BASE64" ]]; then
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "The original signing key has not been configured. CI compilation succeeded, but no installable update will be published."
-            exit 0
+            echo "::error::READER_ANDROID_KEYSTORE_BASE64 is missing; cannot produce an update-compatible APK."
+            exit 1
           fi
           # The historical reader-test key uses the standard Android debug-key
           # alias/password. Only its private keystore bytes need to be secret.
@@ -137,6 +136,19 @@ jobs:
             echo "::error::Built APK has the wrong signing identity"
             exit 1
           fi
+          # A matching signature is not enough: Android also requires the
+          # same package name and a higher version code for an in-place update.
+          package_info="$("$sdk/build-tools/36.0.0/aapt" dump badging "$apk" | grep '^package:')"
+          if [[ "$package_info" != *"name='dev.wath.openlibextended.readertest'"* ]]; then
+            echo "::error::Built APK has the wrong application ID"
+            exit 1
+          fi
+          version_code="$(sed -n "s/.*versionCode='\\([0-9]*\\)'.*/\\1/p" <<< "$package_info")"
+          if [[ -z "$version_code" || "$version_code" -le 14 ]]; then
+            echo "::error::Built APK versionCode must exceed the installed V13-V17 versionCode 14"
+            exit 1
+          fi
+          echo "Verified update identity: $package_info"
           sha256sum "$apk"
 
       # Artifacts are available in the workflow run after successful signing.
