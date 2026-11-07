@@ -1,10 +1,14 @@
 package dev.wath.openlibextended;
 
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
@@ -12,6 +16,31 @@ import io.flutter.plugin.common.MethodChannel;
 public class MainActivity extends FlutterActivity {
     private ReaderInactivityTimer readerTimer;
     private MethodChannel readerChannel;
+    private MethodChannel readerSystemBarsChannel;
+    private boolean readerActive = false;
+    private boolean readerControlsVisible = false;
+
+    // Hide only the status bar. Keep the system navigation bar fully functional.
+    // WindowInsetsController works with mandatory edge-to-edge on modern Android.
+    @SuppressWarnings("deprecation")
+    private void updateReaderStatusBar() {
+        final boolean showStatusBar = !readerActive || readerControlsVisible;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowInsetsController controller = getWindow().getInsetsController();
+            if (controller != null) {
+                if (showStatusBar) controller.show(WindowInsets.Type.statusBars());
+                else controller.hide(WindowInsets.Type.statusBars());
+            }
+        } else {
+            View decor = getWindow().getDecorView();
+            int flags = decor.getSystemUiVisibility();
+            if (showStatusBar) flags &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
+            else flags |= View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+            decor.setSystemUiVisibility(flags);
+        }
+    }
 
     @SuppressWarnings("deprecation")
     private ReaderInactivityTimer timer() {
@@ -45,11 +74,28 @@ public class MainActivity extends FlutterActivity {
                 result.success(null);
             } else result.notImplemented();
         });
+        readerSystemBarsChannel = new MethodChannel(
+            engine.getDartExecutor().getBinaryMessenger(), "openlib/reader_system_bars");
+        readerSystemBarsChannel.setMethodCallHandler((call, result) -> {
+            if ("setReaderActive".equals(call.method)) {
+                readerActive = Boolean.TRUE.equals(call.arguments);
+                if (readerActive) readerControlsVisible = false;
+                updateReaderStatusBar();
+                result.success(null);
+            } else if ("setControlsVisible".equals(call.method)) {
+                readerControlsVisible = Boolean.TRUE.equals(call.arguments);
+                if (readerActive) updateReaderStatusBar();
+                result.success(null);
+            } else {
+                result.notImplemented();
+            }
+        });
     }
     @Override protected void onResume() {
         super.onResume();
         timer().setForeground(true);
         timer().setFocused(hasWindowFocus());
+        if (readerActive) updateReaderStatusBar();
     }
     @Override protected void onPause() {
         timer().setForeground(false);
@@ -58,6 +104,7 @@ public class MainActivity extends FlutterActivity {
     @Override public void onWindowFocusChanged(boolean focused) {
         super.onWindowFocusChanged(focused);
         timer().setFocused(focused);
+        if (focused && readerActive) updateReaderStatusBar();
     }
     @Override public void onUserInteraction() {
         super.onUserInteraction();
@@ -71,6 +118,7 @@ public class MainActivity extends FlutterActivity {
     @Override protected void onDestroy() {
         if (readerTimer != null) readerTimer.destroy();
         if (readerChannel != null) readerChannel.setMethodCallHandler(null);
+        if (readerSystemBarsChannel != null) readerSystemBarsChannel.setMethodCallHandler(null);
         super.onDestroy();
     }
 }

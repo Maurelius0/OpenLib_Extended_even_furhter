@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:openlib/services/reader_system_bars.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:openlib/ui/components/book_reader_shell.dart';
 
@@ -259,5 +262,78 @@ void main() {
     await tester.pump();
     expect(find.text('The Fundamentals'), findsNothing);
     expect(tester.getRect(find.byKey(const Key('reading-page'))), pageBefore);
+  });
+
+  testWidgets('reading toggles the real Android status bar with the menu',
+      (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final calls = <String>[];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(ReaderSystemBars.channel, (call) async {
+      calls.add('${call.method}:${call.arguments}');
+      return null;
+    });
+    addTearDown(() => TestDefaultBinaryMessengerBinding.instance
+        .defaultBinaryMessenger
+        .setMockMethodCallHandler(ReaderSystemBars.channel, null));
+
+    VoidCallback? toggle;
+    await tester.pumpWidget(MaterialApp(
+      home: BookReaderShell(
+        title: 'Book',
+        progress: '',
+        previous: null,
+        next: null,
+        onToggleReady: (callback) => toggle = callback,
+        child: const SizedBox.expand(),
+      ),
+    ));
+    await tester.pump();
+    expect(calls, contains('setReaderActive:true'));
+
+    toggle!();
+    await tester.pump();
+    expect(calls.last, 'setControlsVisible:true');
+    toggle!();
+    await tester.pump();
+    expect(calls.last, 'setControlsVisible:false');
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump();
+    expect(calls.last, 'setReaderActive:false');
+  });
+
+  testWidgets('hiding the status bar never repaginates the reading area',
+      (tester) async {
+    VoidCallback? toggle;
+    Widget buildWithTopPadding(double top) => MaterialApp(
+      home: MediaQuery(
+        data: MediaQueryData(
+          size: const Size(400, 800),
+          padding: EdgeInsets.only(top: top),
+          viewPadding: EdgeInsets.only(top: top),
+        ),
+        child: BookReaderShell(
+          title: 'Book',
+          progress: '',
+          previous: null,
+          next: null,
+          onToggleReady: (callback) => toggle = callback,
+          child: const SizedBox.expand(key: Key('reading-page')),
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(buildWithTopPadding(28));
+    final original = tester.getRect(find.byKey(const Key('reading-page')));
+    toggle!();
+    await tester.pump();
+    await tester.pumpWidget(buildWithTopPadding(0));
+    await tester.pump();
+    expect(tester.getRect(find.byKey(const Key('reading-page'))), original);
+    toggle!();
+    await tester.pump();
+    expect(tester.getRect(find.byKey(const Key('reading-page'))), original);
   });
 }

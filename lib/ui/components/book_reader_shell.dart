@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:openlib/services/reader_screen_timeout.dart';
+import 'package:openlib/services/reader_system_bars.dart';
 
 /// Controls overlay the page; opening them never resizes or repaginates it.
 class BookReaderShell extends StatefulWidget {
@@ -43,8 +44,30 @@ class BookReaderShell extends StatefulWidget {
 
 class _BookReaderShellState extends State<BookReaderShell> {
   bool _controls = false;
+  double _reservedTopInset = 0;
+  Orientation? _lastOrientation;
+
   void _toggle() {
-    if (mounted) setState(() => _controls = !_controls);
+    if (!mounted) return;
+    setState(() => _controls = !_controls);
+    unawaited(ReaderSystemBars.setControlsVisible(_controls));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final media = MediaQuery.of(context);
+    // Freeze the space reserved above the page when the status bar hides,
+    // so toggling controls never changes EPUB pagination or PDF page size.
+    final currentInset = media.padding.top > media.viewPadding.top
+        ? media.padding.top
+        : media.viewPadding.top;
+    if (_lastOrientation != media.orientation) {
+      _lastOrientation = media.orientation;
+      _reservedTopInset = currentInset;
+    } else if (currentInset > _reservedTopInset) {
+      _reservedTopInset = currentInset;
+    }
   }
 
   @override
@@ -52,11 +75,16 @@ class _BookReaderShellState extends State<BookReaderShell> {
     super.initState();
     widget.onToggleReady?.call(_toggle);
     unawaited(ReaderScreenTimeout.setReading(true));
+    // Wait until the first frame has captured the initial safe area.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(ReaderSystemBars.setReaderActive(true));
+    });
   }
 
   @override
   void dispose() {
     unawaited(ReaderScreenTimeout.setReading(false));
+    unawaited(ReaderSystemBars.setReaderActive(false));
     super.dispose();
   }
 
@@ -67,7 +95,12 @@ class _BookReaderShellState extends State<BookReaderShell> {
     final ink = dark ? const Color(0xffe7dcc7) : const Color(0xff30291f);
     return Scaffold(
       backgroundColor: paper,
-      body: SafeArea(
+      body: MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          padding: MediaQuery.paddingOf(context)
+              .copyWith(top: _reservedTopInset),
+        ),
+        child: SafeArea(
         child: LayoutBuilder(
             builder: (context, bounds) => Stack(children: [
                   Positioned.fill(child: widget.child),
@@ -236,6 +269,7 @@ class _BookReaderShellState extends State<BookReaderShell> {
                                 style: TextStyle(color: ink),
                                 child: widget.navigation!))),
                 ])),
+        ),
       ),
     );
   }
