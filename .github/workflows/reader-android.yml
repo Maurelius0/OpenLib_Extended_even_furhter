@@ -18,6 +18,11 @@ on:
 permissions:
   contents: read
 
+# Keep this milestone label in sync with the distributed Reader Test version.
+# Increase it when preparing the next user-facing Reader Test milestone.
+env:
+  READER_TEST_VERSION: '18'
+
 concurrency:
   group: reader-android-${{ github.ref }}
   cancel-in-progress: true
@@ -151,13 +156,26 @@ jobs:
           echo "Verified update identity: $package_info"
           sha256sum "$apk"
 
+      - name: Give verified APK the established Reader Test filename
+        if: steps.signing.outputs.configured == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          source="build/app/outputs/flutter-apk/app-release.apk"
+          dest="build/app/outputs/flutter-apk/Openlib-Reader-Test-v${READER_TEST_VERSION}.apk"
+          test -s "$source"
+          cp "$source" "$dest"
+          cmp "$source" "$dest"
+          test -s "$dest"
+          echo "Distribution APK: $(basename "$dest")"
+
       # Artifacts are available in the workflow run after successful signing.
       # No automatic Release is created; explicit testing comes first.
       - name: Upload verified update APK
         if: steps.signing.outputs.configured == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: reader-android-signed-${{ github.run_number }}
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: Openlib-Reader-Test-v${{ env.READER_TEST_VERSION }}
+          path: build/app/outputs/flutter-apk/Openlib-Reader-Test-v${{ env.READER_TEST_VERSION }}.apk
           if-no-files-found: error
           retention-days: 30
