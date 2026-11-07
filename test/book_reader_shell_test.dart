@@ -302,6 +302,8 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await tester.pump();
     expect(calls.last, 'setReaderActive:false');
+    // Flutter verifies debug globals before addTearDown callbacks execute.
+    debugDefaultTargetPlatformOverride = null;
   });
 
   testWidgets('hiding the status bar never repaginates the reading area',
