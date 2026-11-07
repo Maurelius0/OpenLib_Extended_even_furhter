@@ -48,6 +48,22 @@ APK and uploads it as a private-to-workflow GitHub Actions artifact for
 download. Android versionCode is automatically greater than the old value 14.
 No GitHub Release is automatically published until the APK is reviewed.
 
+## Distribution filenames
+
+Successful signed builds are uploaded under the familiar name
+`Openlib-Reader-Test-v18` and contain
+`Openlib-Reader-Test-v18.apk`, instead of Flutter's generic `app-release.apk`.
+GitHub Actions packages artifacts in a ZIP when downloaded; extract the ZIP on
+Android to get the APK. The ZIP name and the actual APK filename are separate
+from the APK's Android application ID and signing certificate.
+
+The reader milestone number is defined by `READER_TEST_VERSION` in the
+workflow. Bump it for the next user-facing milestone (v19, v20, etc.) rather
+than calling every CI run a new functional version. Android's internal
+`versionCode` remains automatically increasing per workflow run to permit
+in-place installation; the filename does not determine upgrade compatibility.
+
+
 If the old keystore is irretrievably lost, an in-place Android update using
 the same app package is not possible. Plan and verify an export/import of the
 reader's local data before considering a differently signed replacement.
