@@ -42,6 +42,7 @@ void main() {
       expect(find.text('2 / 3'), findsNothing);
       toggle!();
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 170));
       expect(find.byType(Slider), findsOneWidget);
       final fontButton = find.byTooltip('Choose font');
       final sizeButton = find.byTooltip('Decrease text size');
@@ -55,12 +56,14 @@ void main() {
       expect(find.byTooltip('Previous page'), findsNothing);
       toggle!();
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 170));
       expect(find.byTooltip('Next page'), findsNothing);
       expect(find.byType(Slider), findsNothing);
       expect(tester.getRect(find.byKey(pageKey)), before);
       expect(find.text('2 / 3'), findsNothing);
       toggle!();
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 170));
       expect(find.byTooltip('Previous page'), findsNothing);
     },
   );
@@ -83,6 +86,7 @@ void main() {
     )));
     toggle!();
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 170));
     expect(tester.widget<IconButton>(find.byWidgetPredicate((w) => w is IconButton && w.tooltip == 'Decrease text size')).onPressed, isNull);
     await tester.tap(find.byTooltip('Increase text size'));
     await tester.pump();
@@ -104,6 +108,7 @@ void main() {
     expect(find.text('Section 1/2 · 3/9'), findsNothing);
     toggle!();
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 170));
     expect(find.byTooltip('Use dark mode'), findsNothing);
     expect(find.text('A'), findsNothing);
   });
@@ -135,6 +140,7 @@ void main() {
       expect(find.text(longTitle), findsNothing);
       toggle!();
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 170));
       final title = find.text(longTitle);
       final text = tester.widget<Text>(title);
       expect(text.textAlign, TextAlign.center);
@@ -167,6 +173,7 @@ void main() {
       expect(settingsTapped, 1);
       toggle!();
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 170));
       expect(find.text(longTitle), findsNothing);
       expect(tester.getRect(find.byKey(const Key('page'))), pageBefore);
       expect(tester.takeException(), isNull);
@@ -199,6 +206,7 @@ void main() {
     )));
     toggle!();
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 170));
     final scrollable = find.descendant(
         of: find.byType(SingleChildScrollView),
         matching: find.byType(Scrollable));
@@ -238,6 +246,7 @@ void main() {
     expect(find.text('Chapter 2: Money and credit'), findsNothing);
     toggle!();
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 170));
     final title = find.text('The Changing World Order');
     final part = find.text('Chapter 2: Money and credit');
     expect(tester.getRect(title).center.dx, closeTo(206, .1));
@@ -260,6 +269,7 @@ void main() {
     expect(find.text('The Fundamentals'), findsOneWidget);
     toggle!();
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 170));
     expect(find.text('The Fundamentals'), findsNothing);
     expect(tester.getRect(find.byKey(const Key('reading-page'))), pageBefore);
   });
@@ -294,9 +304,11 @@ void main() {
 
     toggle!();
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 170));
     expect(calls.last, 'setControlsVisible:true');
     toggle!();
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 170));
     expect(calls.last, 'setControlsVisible:false');
 
     await tester.pumpWidget(const SizedBox());
@@ -331,11 +343,82 @@ void main() {
     final original = tester.getRect(find.byKey(const Key('reading-page')));
     toggle!();
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 170));
     await tester.pumpWidget(buildWithTopPadding(0));
     await tester.pump();
     expect(tester.getRect(find.byKey(const Key('reading-page'))), original);
     toggle!();
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 170));
     expect(tester.getRect(find.byKey(const Key('reading-page'))), original);
+  });
+
+  testWidgets('reader controls fade over 150ms without resizing the page',
+      (tester) async {
+    VoidCallback? toggle;
+    await tester.pumpWidget(MaterialApp(
+      home: BookReaderShell(
+        title: 'Book',
+        progress: '',
+        previous: null,
+        next: null,
+        navigation: const Text('Jump'),
+        onToggleReady: (callback) => toggle = callback,
+        child: const SizedBox.expand(key: Key('reading-page')),
+      ),
+    ));
+    final page = tester.getRect(find.byKey(const Key('reading-page')));
+    toggle!();
+    await tester.pump();
+    final visibleHeader = find.byKey(const ValueKey('reader-menu-visible')).first;
+    final headerFade = find.ancestor(
+        of: visibleHeader, matching: find.byType(FadeTransition)).first;
+    expect(tester.widget<FadeTransition>(headerFade).opacity.value,
+        closeTo(0, 0.01));
+    await tester.pump(const Duration(milliseconds: 75));
+    expect(tester.widget<FadeTransition>(headerFade).opacity.value,
+        closeTo(.5, .15));
+    expect(tester.getRect(find.byKey(const Key('reading-page'))), page);
+
+    await tester.pump(const Duration(milliseconds: 75));
+    expect(tester.widget<FadeTransition>(headerFade).opacity.value,
+        closeTo(1, 0.01));
+    toggle!();
+    await tester.pump();
+    expect(find.byTooltip('Library'), findsOneWidget); // exiting, fading
+    expect(tester.widget<IgnorePointer>(
+        find.byKey(const Key('reader-top-fade')).first).ignoring, isTrue);
+    await tester.pump(const Duration(milliseconds: 170));
+    expect(find.byTooltip('Library'), findsNothing);
+    expect(find.text('Jump'), findsNothing);
+    expect(tester.getRect(find.byKey(const Key('reading-page'))), page);
+  });
+
+  testWidgets('reopening the menu during its fade-out remains interactive',
+      (tester) async {
+    VoidCallback? toggle;
+    await tester.pumpWidget(MaterialApp(
+      home: BookReaderShell(
+        title: 'Book',
+        progress: '',
+        previous: null,
+        next: null,
+        onToggleReady: (callback) => toggle = callback,
+        child: const SizedBox.expand(),
+      ),
+    ));
+    toggle!();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 170));
+    toggle!();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 30));
+    toggle!();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 170));
+    expect(find.byTooltip('Library'), findsOneWidget);
+    expect(tester.widget<IgnorePointer>(
+        find.byKey(const Key('reader-top-fade')).first).ignoring, isFalse);
+    expect(tester.takeException(), isNull);
   });
 }

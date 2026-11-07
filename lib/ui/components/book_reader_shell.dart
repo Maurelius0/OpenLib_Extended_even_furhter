@@ -93,6 +93,10 @@ class _BookReaderShellState extends State<BookReaderShell> {
     final dark = widget.dark ?? Theme.of(context).brightness == Brightness.dark;
     final paper = dark ? const Color(0xff211e1a) : const Color(0xfff6efdf);
     final ink = dark ? const Color(0xffe7dcc7) : const Color(0xff30291f);
+    // Reduced-motion accessibility settings skip this nonessential fade.
+    final fadeDuration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : const Duration(milliseconds: 150);
     return Scaffold(
       backgroundColor: paper,
       body: MediaQuery(
@@ -104,12 +108,15 @@ class _BookReaderShellState extends State<BookReaderShell> {
         child: LayoutBuilder(
             builder: (context, bounds) => Stack(children: [
                   Positioned.fill(child: widget.child),
-                  if (_controls)
-                    Positioned(
+                  Positioned(
                       top: 0,
                       left: 0,
                       right: 0,
-                      child: ConstrainedBox(
+                      child: _ReaderFadeOverlay(
+                        key: const Key('reader-top-fade'),
+                        visible: _controls,
+                        duration: fadeDuration,
+                        child: ConstrainedBox(
                         constraints:
                             BoxConstraints(maxHeight: bounds.maxHeight * .45),
                         child: Material(
@@ -257,20 +264,64 @@ class _BookReaderShellState extends State<BookReaderShell> {
                           ]),
                         ),
                       ),
+                      ),
                     ),
-                  if (_controls && widget.navigation != null)
+                  if (widget.navigation != null)
                     Positioned(
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        child: Material(
-                            color: paper,
-                            child: DefaultTextStyle.merge(
-                                style: TextStyle(color: ink),
-                                child: widget.navigation!))),
+                        child: _ReaderFadeOverlay(
+                            key: const Key('reader-bottom-fade'),
+                            visible: _controls,
+                            duration: fadeDuration,
+                            child: Material(
+                                color: paper,
+                                child: DefaultTextStyle.merge(
+                                    style: TextStyle(color: ink),
+                                    child: widget.navigation!)))),
                 ])),
         ),
       ),
     );
   }
+}
+
+ 
+/// The menu stays mounted only for the brief exit fade. Invisible outgoing
+/// controls cannot intercept page taps or remain in the accessibility tree.
+/// Flutter drives this fade on the display's vsync, not a fixed frame timer.
+class _ReaderFadeOverlay extends StatelessWidget {
+  const _ReaderFadeOverlay({
+    super.key,
+    required this.visible,
+    required this.duration,
+    required this.child,
+  });
+
+  final bool visible;
+  final Duration duration;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+        ignoring: !visible,
+        child: ExcludeSemantics(
+          excluding: !visible,
+          child: AnimatedSwitcher(
+            duration: duration,
+            reverseDuration: duration,
+            switchInCurve: Curves.linear,
+            switchOutCurve: Curves.linear,
+            child: visible
+                ? KeyedSubtree(
+                    key: const ValueKey('reader-menu-visible'),
+                    child: child,
+                  )
+                : const SizedBox.shrink(
+                    key: ValueKey('reader-menu-hidden'),
+                  ),
+          ),
+        ),
+      );
 }

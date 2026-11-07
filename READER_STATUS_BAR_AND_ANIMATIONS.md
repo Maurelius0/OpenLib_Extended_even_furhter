@@ -35,3 +35,19 @@ settings. Do not force 120 Hz globally.
 - Test notifications/quick settings pulled down via Android's usual gesture.
 
 No APK or device performance validation is implied by this source change.
+
+## Reader controls fade (v19)
+
+- EPUB and PDF overlays fade in and out in 150 milliseconds (both the top
+  controls and bottom navigation). The underlying page has unchanged bounds.
+- Flutter uses vsync-timed `AnimatedSwitcher` crossfades; invisible outgoing
+  overlays cannot accept taps or appear in accessibility semantics.
+- Android 11+ requests a 150 ms alpha transition of the actual system status
+  bar using `WindowInsetsController.controlWindowInsetsAnimation`. If the
+  system refuses to grant animation control, the original show/hide commands
+  remain the fallback; exact cross-process synchronization is not guaranteed.
+- Android system "Remove animations" disables the custom status-bar fade;
+  Flutter reduced-animation mode skips the menu fade.
+- Test both EPUB and PDF on the Pixel 8: normal show/hide, repeated rapid
+  center taps, page bounds unchanged, focus loss/resume, device rotation,
+  light/dark appearance, and native status/navigation gestures.

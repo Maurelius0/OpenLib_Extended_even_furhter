@@ -21,7 +21,7 @@ permissions:
 # Keep this milestone label in sync with the distributed Reader Test version.
 # Increase it when preparing the next user-facing Reader Test milestone.
 env:
-  READER_TEST_VERSION: '18'
+  READER_TEST_VERSION: '19'
 
 concurrency:
   group: reader-android-${{ github.ref }}
