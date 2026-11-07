@@ -143,7 +143,7 @@ jobs:
             echo "::error::Built APK has the wrong application ID"
             exit 1
           fi
-          version_code="$(sed -n "s/.*versionCode='\\([0-9]*\\)'.*/\\1/p" <<< "$package_info")"
+          version_code="$(sed -nE "s/.*versionCode='([0-9]+)'.*/\1/p" <<< "$package_info")"
           if [[ -z "$version_code" || "$version_code" -le 14 ]]; then
             echo "::error::Built APK versionCode must exceed the installed V13-V17 versionCode 14"
             exit 1
