@@ -70,7 +70,8 @@ jobs:
             test/book_seek_slider_test.dart \
             test/reader_image_viewer_test.dart \
             test/library_status_tabs_test.dart \
-            test/reader_screen_timeout_test.dart
+            test/reader_screen_timeout_test.dart \
+            test/epub_relative_paths_test.dart
 
       # Always compile an APK to catch Android-specific build regressions.
       # A CI debug keystore is disposable and CANNOT update an installed
