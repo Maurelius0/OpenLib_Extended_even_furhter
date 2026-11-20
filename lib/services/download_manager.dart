@@ -5,6 +5,7 @@ import 'dart:io';
 // Package imports:
 import 'package:dio/dio.dart';
 import 'package:crypto/crypto.dart';
+import 'package:openlib/services/book_file_validation.dart';
 
 // Project imports:
 import 'package:openlib/services/database.dart' show MyLibraryDb, MyBook;
@@ -76,7 +77,7 @@ class DownloadTask {
     required this.md5,
     required this.title,
     required this.mirrors,
-    required this.format,
+    required String format,
     this.author,
     this.thumbnail,
     this.publisher,
@@ -92,7 +93,7 @@ class DownloadTask {
     this.totalBytes = 0,
     this.errorMessage,
     this.cancelToken,
-  });
+  }) : format = normalizeBookFormat(format);
 
   DownloadTask copyWith({
     DownloadStatus? status,
@@ -209,21 +210,16 @@ class DownloadManager {
     return [...httpsMirrors, ...ipfsMirrors];
   }
 
-  Future<bool> _verifyFileCheckSum(
-      {required String md5Hash, required String fileName}) async {
-    try {
-      final bookStorageDirectory =
-          await _database.getPreference('bookStorageDirectory');
-      final filePath = '$bookStorageDirectory/$fileName';
-      final file = File(filePath);
-      final stream = file.openRead();
-      final hash = await md5.bind(stream).first;
-      if (md5Hash == hash.toString()) {
-        return true;
+  Future<void> _verifyDownloadedBook(DownloadTask task, String filePath) async {
+    await validateBookFile(filePath, task.format);
+    // Some providers use a title or source ID in this field instead of MD5.
+    // Require an exact match whenever the provider supplies a real checksum.
+    if (RegExp(r'^[a-fA-F0-9]{32}$').hasMatch(task.md5)) {
+      final hash = await md5.bind(File(filePath).openRead()).first;
+      if (hash.toString() != task.md5.toLowerCase()) {
+        throw const FormatException(
+            'Book checksum does not match. The download is corrupt or incorrect.');
       }
-      return false;
-    } catch (_) {
-      return false;
     }
   }
 
@@ -666,6 +662,7 @@ class DownloadManager {
     const maxLinkRefreshes = 2;
     int attempt = 0;
     bool lastErrorRetryable = false;
+    String? lastFailure;
 
     Duration backoffFor(int attempt) =>
         Duration(seconds: 2 * (1 << (attempt - 1).clamp(0, 3)));
@@ -704,6 +701,21 @@ class DownloadManager {
         );
 
         if (completed) {
+          final current = _activeDownloads[taskId];
+          if (current == null ||
+              current.status == DownloadStatus.paused ||
+              current.status == DownloadStatus.cancelled) return;
+          _updateTaskStatus(taskId, DownloadStatus.verifying);
+          try {
+            await _verifyDownloadedBook(current, filePath);
+          } catch (_) {
+            // Never resume an HTML response, corrupt archive or wrong book.
+            final invalid = File(filePath);
+            if (await invalid.exists()) await invalid.delete();
+            _updateTaskProgress(taskId, 0, 0, 0);
+            rethrow;
+          }
+          if (current.cancelToken?.isCancelled ?? false) return;
           downloadSuccessful = true;
         }
       } catch (e) {
@@ -713,6 +725,7 @@ class DownloadManager {
         _logger.warning('Download from mirror failed',
             tag: 'DownloadManager', error: e);
         lastErrorRetryable = _isTransientMirrorError(e);
+        lastFailure = e.toString();
       }
 
       if (!downloadSuccessful) {
@@ -780,7 +793,8 @@ class DownloadManager {
     if (task != null &&
         task.status != DownloadStatus.paused &&
         task.status != DownloadStatus.cancelled) {
-      _handleDownloadFailure(taskId, 'All mirrors failed!');
+      _handleDownloadFailure(taskId,
+          'No valid book could be downloaded. ${lastFailure ?? 'All mirrors failed.'}');
     }
   }
 
@@ -932,7 +946,9 @@ class DownloadManager {
   Future<void> _finalizeDownload(
       String taskId, String filePath, String fileName) async {
     DownloadTask? task = _activeDownloads[taskId];
-    if (task == null) return;
+    if (task == null ||
+        task.status == DownloadStatus.paused ||
+        task.status == DownloadStatus.cancelled) return;
 
     _updateTaskStatus(task.id, DownloadStatus.verifying);
     await _notificationService.showDownloadNotification(
@@ -942,16 +958,7 @@ class DownloadManager {
       progress: 100,
     );
 
-    bool checkSumValid;
-    try {
-      checkSumValid =
-          await _verifyFileCheckSum(md5Hash: task.md5, fileName: fileName);
-    } catch (e, st) {
-      _logger.error('Checksum verification failed',
-          tag: 'DownloadManager', error: e, stackTrace: st);
-      checkSumValid = false;
-    }
-
+    if (task.cancelToken?.isCancelled ?? false) return;
     try {
       await _database.insert(MyBook(
         id: task.md5,
@@ -981,9 +988,7 @@ class DownloadManager {
     await _notificationService.showDownloadNotification(
       id: task.id.hashCode,
       title: task.title,
-      body: checkSumValid
-          ? 'Download completed!'
-          : 'Download completed (checksum failed)',
+      body: 'Download completed!',
       progress: -1,
     );
 

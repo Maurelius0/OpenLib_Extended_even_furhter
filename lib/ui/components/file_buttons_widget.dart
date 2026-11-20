@@ -8,6 +8,7 @@ import 'package:open_file/open_file.dart';
 
 // Project imports:
 import 'package:openlib/services/files.dart' show getFilePath;
+import 'package:openlib/services/book_file_validation.dart';
 import 'package:openlib/ui/components/delete_dialog_widget.dart';
 import 'package:openlib/ui/components/snack_bar_widget.dart';
 import 'package:openlib/ui/epub_viewer.dart' show launchEpubViewer;
@@ -46,10 +47,12 @@ class FileOpenAndDeleteButtons extends ConsumerWidget {
                   color: Theme.of(context).colorScheme.primary,
                 )),
             onPressed: () async {
-              if (format == 'pdf') {
+              final type = normalizeBookFormat(format);
+              final extension = actualFileName.split('.').last.toLowerCase();
+              if (type == 'pdf' || extension == 'pdf') {
                 await launchPdfViewer(
                     fileName: actualFileName, context: context, ref: ref);
-              } else if (format == 'epub') {
+              } else if (type == 'epub' || extension == 'epub') {
                 await launchEpubViewer(
                     fileName: actualFileName, context: context, ref: ref);
               } else {

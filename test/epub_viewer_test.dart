@@ -122,7 +122,7 @@ void main() {
 
     // The viewer must degrade to a visible message, never crash the app.
     expect(find.byType(SnackBar), findsOneWidget);
-    expect(find.textContaining('File not found'), findsOneWidget);
+    expect(find.textContaining('Unable to open book:'), findsOneWidget);
     expect(find.byType(EpubViewerWidget), findsNothing);
   });
 

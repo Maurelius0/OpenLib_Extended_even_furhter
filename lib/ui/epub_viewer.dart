@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
+import 'package:openlib/services/book_file_validation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -36,40 +37,31 @@ Future<void> launchEpubViewer({
 }) async {
   try {
     String path = await getFilePath(fileName);
-    bool openWithExternalApp = ref.watch(openEpubWithExternalAppProvider);
+    await validateBookFile(path, 'epub');
+    if (!context.mounted) return;
+    bool openWithExternalApp = ref.read(openEpubWithExternalAppProvider);
 
-    // Check if user wants external app
     if (openWithExternalApp) {
-      await OpenFile.open(
+      final result = await OpenFile.open(
         path,
         linuxByProcess: true,
         type: "application/epub+zip",
       );
-    } else {
-      try {
-        // Use internal Epub Viewer for all platforms (epub_view supports desktop)
-        if (context.mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (BuildContext context) {
-                return EpubViewerWidget(fileName: fileName);
-              },
-            ),
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          showSnackBar(context: context, message: "Unable to open epub!");
-        }
-      }
+      if (result.type == ResultType.done) return;
     }
+    if (!context.mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EpubViewerWidget(fileName: fileName),
+      ),
+    );
   } catch (e) {
     // File doesn't exist or can't be accessed
     if (context.mounted) {
       showSnackBar(
         context: context,
-        message: "File not found. The download may have failed.",
+        message: "Unable to open book: $e",
       );
     }
   }

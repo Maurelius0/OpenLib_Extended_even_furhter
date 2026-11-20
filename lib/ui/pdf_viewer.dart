@@ -6,6 +6,7 @@
 // Flutter imports:
 import 'package:openlib/ui/components/book_reader_shell.dart';
 import 'package:openlib/services/database.dart';
+import 'package:openlib/services/book_file_validation.dart';
 
 import 'package:flutter/material.dart';
 
@@ -32,31 +33,27 @@ Future<void> launchPdfViewer({
   required BuildContext context,
   required WidgetRef ref,
 }) async {
-  bool openWithExternalApp = ref.watch(openPdfWithExternalAppProvider);
-
-  // The user can always prefer the external app; pdfrx covers every
-  // platform in-app otherwise.
-  if (openWithExternalApp) {
-    try {
-      String path = await getFilePath(fileName);
-      await OpenFile.open(path, linuxByProcess: true, type: "application/pdf");
-    } catch (e) {
-      if (context.mounted) {
-        showSnackBar(
-          context: context,
-          message: "File not found. The download may have failed.",
-        );
-      }
+  try {
+    final path = await getFilePath(fileName);
+    await validateBookFile(path, 'pdf');
+    if (!context.mounted) return;
+    final external = ref.read(openPdfWithExternalAppProvider);
+    if (external) {
+      final result = await OpenFile.open(
+          path, linuxByProcess: true, type: "application/pdf");
+      if (result.type == ResultType.done) return;
     }
-  } else {
+    if (!context.mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (BuildContext context) {
-          return PdfViewPage(fileName: fileName);
-        },
+        builder: (context) => PdfViewPage(fileName: fileName),
       ),
     );
+  } catch (e) {
+    if (context.mounted) {
+      showSnackBar(context: context, message: "Unable to open book: $e");
+    }
   }
 }
 

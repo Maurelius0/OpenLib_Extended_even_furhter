@@ -21,7 +21,7 @@ permissions:
 # Keep this milestone label in sync with the distributed Reader Test version.
 # Increase it when preparing the next user-facing Reader Test milestone.
 env:
-  READER_TEST_VERSION: '19'
+  READER_TEST_VERSION: '20'
 
 concurrency:
   group: reader-android-${{ github.ref }}
@@ -71,7 +71,11 @@ jobs:
             test/reader_image_viewer_test.dart \
             test/library_status_tabs_test.dart \
             test/reader_screen_timeout_test.dart \
-            test/epub_relative_paths_test.dart
+            test/epub_relative_paths_test.dart \
+            test/epub_viewer_test.dart \
+            test/book_file_validation_test.dart \
+            test/download_manager_test.dart \
+            test/library_download_status_test.dart
 
       # Always compile an APK to catch Android-specific build regressions.
       # A CI debug keystore is disposable and CANNOT update an installed

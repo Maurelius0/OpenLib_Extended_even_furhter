@@ -8,6 +8,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:crypto/crypto.dart';
+import 'support/book_fixture.dart';
 
 // Package imports:
 import 'package:flutter_test/flutter_test.dart';
@@ -171,8 +173,59 @@ void main() {
       await server.close();
     });
 
+    test('HTML from a mirror is discarded before trying the next mirror',
+        () async {
+      final bytes = epubFixture(List.generate(1024, (i) => i % 251));
+      server = await _RangeServer.start(bytes: bytes);
+      server._server.listen(server.handle);
+      final blocked = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(() => blocked.close(force: true));
+      blocked.listen((request) async {
+        request.response.headers.contentType = ContentType.html;
+        request.response.write('<html>Download limit reached</html>');
+        await request.response.close();
+      });
+      final id = md5.convert(bytes).toString();
+      final terminal = manager.downloadsStream.firstWhere((tasks) =>
+          tasks[id]?.status == DownloadStatus.completed ||
+          tasks[id]?.status == DownloadStatus.failed);
+      await manager.addDownload(DownloadTask(
+        id: id, md5: id, title: 'Mirror validation',
+        mirrors: ['http://127.0.0.1:${blocked.port}/blocked', server.url.toString()],
+        format: ' EPUB ', link: server.url.toString(),
+      ));
+      final tasks = await terminal.timeout(const Duration(seconds: 15));
+      expect(tasks[id]!.status, DownloadStatus.completed);
+      final book = await MyLibraryDb.instance.getId(id);
+      expect(book!.format, 'epub');
+      expect(await File('$saveDir/${book.fileName}').readAsBytes(), bytes);
+      manager.removeDownload(id);
+    });
+
+    test('a valid book with a wrong checksum never reaches the library',
+        () async {
+      final bytes = epubFixture([1, 2, 3]);
+      server = await _RangeServer.start(bytes: bytes);
+      server._server.listen(server.handle);
+      const id = '00000000000000000000000000000000';
+      final terminal = manager.downloadsStream.firstWhere((tasks) =>
+          tasks[id]?.status == DownloadStatus.completed ||
+          tasks[id]?.status == DownloadStatus.failed);
+      await manager.addDownload(DownloadTask(
+        id: id, md5: id, title: 'Wrong checksum',
+        mirrors: [server.url.toString()],
+        format: 'epub', link: server.url.toString(),
+      ));
+      final tasks = await terminal.timeout(const Duration(seconds: 10));
+      expect(tasks[id]!.status, DownloadStatus.failed);
+      expect(tasks[id]!.errorMessage, contains('checksum'));
+      expect(await MyLibraryDb.instance.getId(id), isNull);
+      expect(await File('$saveDir/WrongChecksum.epub').exists(), isFalse);
+      manager.removeDownload(id);
+    });
+
     test('completes and verifies a full download', () async {
-      final bytes = Uint8List.fromList(
+      final bytes = epubFixture(
           List.generate(1024 * 300, (i) => i % 251)); // ~300KB
       server = await _RangeServer.start(bytes: bytes);
       server._server.listen(server.handle);
@@ -212,7 +265,7 @@ void main() {
       // The libgen flow passes the get.php URL as a direct mirror link
       // (isDirectLink), which must download without any scraping.
       final bytes =
-          Uint8List.fromList(List.generate(1024 * 150, (i) => (i * 7) % 251));
+          epubFixture(List.generate(1024 * 150, (i) => (i * 7) % 251));
       server = await _RangeServer.start(bytes: bytes);
       server._server.listen(server.handle);
 
@@ -249,7 +302,7 @@ void main() {
     test('pause mid-download then resume continues from disk (Range server)',
         () async {
       final bytes =
-          Uint8List.fromList(List.generate(1024 * 200, (i) => (i * 7) % 251));
+          epubFixture(List.generate(1024 * 200, (i) => (i * 7) % 251));
       // 30ms per 16KB chunk: slow enough to pause in the middle.
       server = await _RangeServer.start(
           bytes: bytes, chunkDelay: const Duration(milliseconds: 30));
@@ -318,7 +371,7 @@ void main() {
           .savePreference('bookStorageDirectory', dir.path);
 
       final bytes =
-          Uint8List.fromList(List.generate(50 * 1024, (i) => i % 251));
+          epubFixture(List.generate(50 * 1024, (i) => i % 251));
       server = await _RangeServer.start(bytes: bytes);
       server._server.listen(server.handle);
 
@@ -366,7 +419,7 @@ void main() {
 
     test('rejects a second task for the same book (md5 dedupe)', () async {
       final bytes =
-          Uint8List.fromList(List.generate(50 * 1024, (i) => i % 251));
+          epubFixture(List.generate(50 * 1024, (i) => i % 251));
       server = await _RangeServer.start(bytes: bytes);
       server._server.listen(server.handle);
 
@@ -415,7 +468,7 @@ void main() {
 
     test('retries a transient 500 from the mirror and completes', () async {
       final bytes =
-          Uint8List.fromList(List.generate(60 * 1024, (i) => (i * 3) % 251));
+          epubFixture(List.generate(60 * 1024, (i) => (i * 3) % 251));
       server = await _RangeServer.start(bytes: bytes);
       server.failNextGets = 2; // two 500s, then success
       server._server.listen(server.handle);
@@ -452,7 +505,7 @@ void main() {
     }, timeout: const Timeout(Duration(seconds: 90)));
     test('server without Range support restarts cleanly from zero', () async {
       final bytes =
-          Uint8List.fromList(List.generate(1024 * 100, (i) => (i * 13) % 251));
+          epubFixture(List.generate(1024 * 100, (i) => (i * 13) % 251));
       server = await _RangeServer.start(
           bytes: bytes,
           supportsRange: false,
@@ -510,7 +563,7 @@ void main() {
       // must continue failed/paused tasks from their partial files
       // instead of leaving them dead.
       final bytes =
-          Uint8List.fromList(List.generate(1024 * 200, (i) => (i * 13) % 251));
+          epubFixture(List.generate(1024 * 200, (i) => (i * 13) % 251));
       // 60ms per 16KB chunk: the transfer needs ~800ms, so the 400ms
       // kill below reliably lands mid-transfer even with downloads
       // starting immediately (no probe delay anymore).
@@ -591,7 +644,7 @@ void main() {
       // fresh URL and finish the download instead of reporting
       // "all mirrors failed".
       final bytes =
-          Uint8List.fromList(List.generate(1024 * 120, (i) => (i * 13) % 251));
+          epubFixture(List.generate(1024 * 120, (i) => (i * 13) % 251));
 
       // Two servers: the "expired" one rejects everything, the fresh
       // one serves the book.
@@ -645,7 +698,7 @@ void main() {
     test('gives up after two failed link refreshes', () async {
       // A refresher that keeps handing back dead URLs must not loop
       // forever: two rounds, then the task fails for real.
-      final bytes = Uint8List.fromList(List.generate(1024, (i) => i % 7));
+      final bytes = epubFixture(List.generate(1024, (i) => i % 7));
 
       final dead = await _RangeServer.start(bytes: bytes);
       dead._server.listen((request) async {
@@ -684,7 +737,7 @@ void main() {
       expect(refreshCalls, 2,
           reason: 'exactly two refresh rounds, then failure');
       expect(manager.activeDownloads[task.id]?.errorMessage,
-          'All mirrors failed!');
+          contains('No valid book could be downloaded'));
       manager.removeDownload(task.id);
     }, timeout: const Timeout(Duration(seconds: 60)));
 
@@ -694,7 +747,7 @@ void main() {
       // to the second mirror and finish - without the old HEAD probe
       // (which added a 2s delay plus one probe request per mirror).
       final bytes =
-          Uint8List.fromList(List.generate(1024 * 100, (i) => i % 13));
+          epubFixture(List.generate(1024 * 100, (i) => i % 13));
 
       final dead = await _RangeServer.start(bytes: bytes);
       dead._server.listen((request) async {

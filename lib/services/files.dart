@@ -1,5 +1,6 @@
 // Dart imports:
 import 'dart:io';
+import 'package:openlib/services/book_file_validation.dart';
 
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -104,7 +105,7 @@ String generateBookFileName({
     baseName = md5.substring(0, 8);
   }
 
-  return "$baseName.$format";
+  return "$baseName.${normalizeBookFormat(format)}";
 }
 
 /// Lets the user pick the folder books are stored in.

@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  archive: ^4.0.9
   csslib: 1.0.2
   flutter:
     sdk: flutter
@@ -107,7 +108,6 @@ dependency_overrides:
     path: third_party/epubx
 
 dev_dependencies:
-  archive: ^4.0.9
   import_sorter: ^4.6.0
   flutter_test:
     sdk: flutter

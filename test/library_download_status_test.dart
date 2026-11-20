@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'support/book_fixture.dart';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -72,7 +73,7 @@ void main() {
           ReadingStatus.inProgress;
       expect(visible(), ['reading']);
 
-      final bytes = List<int>.generate(1024, (i) => i % 251);
+      final bytes = epubFixture(List<int>.generate(1024, (i) => i % 251));
       final id = md5.convert(bytes).toString();
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       addTearDown(() => server.close(force: true));
