@@ -61,7 +61,7 @@ Future<void> validateBookFile(String filePath, String format) async {
               mimetype.size > 256 ||
               utf8.decode(mimetype.content).trim() != 'application/epub+zip' ||
               container == null ||
-              !archive.files.any((entry) => entry.name.endsWith('.opf'))) {
+              container.size == 0) {
             throw const FormatException(
                 'The downloaded ZIP is not an EPUB book.');
           }
